@@ -18,6 +18,25 @@ create table if not exists public.documents (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.semesters (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  unique(user_id, name)
+);
+alter table public.semesters enable row level security;
+drop policy if exists "Users can read their own semesters" on public.semesters;
+drop policy if exists "Users can create their own semesters" on public.semesters;
+drop policy if exists "Users can update their own semesters" on public.semesters;
+drop policy if exists "Users can delete their own semesters" on public.semesters;
+create policy "Users can read their own semesters" on public.semesters for select to authenticated using ((select auth.uid()) = user_id);
+create policy "Users can create their own semesters" on public.semesters for insert to authenticated with check ((select auth.uid()) = user_id);
+create policy "Users can update their own semesters" on public.semesters for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+create policy "Users can delete their own semesters" on public.semesters for delete to authenticated using ((select auth.uid()) = user_id);
+grant select, insert, update, delete on public.semesters to authenticated;
+alter table public.documents add column if not exists semester text not null default '2026.1';
+
 alter table public.subjects add column if not exists user_id uuid references auth.users(id) on delete cascade;
 alter table public.documents add column if not exists user_id uuid references auth.users(id) on delete cascade;
 alter table public.subjects drop constraint if exists subjects_name_key;
