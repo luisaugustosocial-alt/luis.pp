@@ -140,7 +140,7 @@ function App() {
     if (!name) { setError("O nome do arquivo não pode ficar vazio."); return; }
     if (name === doc.name) return;
     setError(""); setNotice("");
-    const title = name.replace(/\\.[^.]+$/, "");
+    const title = name.replace(/\.[^.]+$/, "");
     const { error } = await supabase.from("documents").update({ name, title }).eq("id", doc.id);
     if (error) { setError("Não consegui renomear o arquivo: " + error.message); return; }
     setDocs(prev => prev.map(d => d.id === doc.id ? { ...d, name, title } : d));
