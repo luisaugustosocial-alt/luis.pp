@@ -1,37 +1,140 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { createClient } from "@supabase/supabase-js";
-import { BookOpen, Search, Plus, Upload, FileText, Presentation, Image, File, Download, Trash2, LogOut, LockKeyhole, FolderOpen, Clock3, X, ExternalLink } from "lucide-react";
+import { BookOpen, Search, Plus, Upload, FileText, Presentation, Image as ImageIcon, Download, Trash2, LogOut, LockKeyhole, FolderOpen, Clock3, X, ExternalLink, Mail } from "lucide-react";
 import "./styles.css";
 
-const url=import.meta.env.VITE_SUPABASE_URL;
-const key=import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase=url && key && !url.includes("SEU-PROJETO") ? createClient(url,key) : null;
-const starter=["Fundamentos da Publicidade e Propaganda","História Social dos Meios","Filosofia e História das Ciências","Oficina de Leitura e Produção Textual","Informática Aplicada","Ação Artística e Apreciação Estética"];
-const get=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}};
-function App(){
- const [pin,setPin]=useState(""); const [unlocked,setUnlocked]=useState(false);
- const [subjects,setSubjects]=useState(()=>get("lpp-subjects",starter));
- const [docs,setDocs]=useState(()=>get("lpp-docs",[]));
- const [active,setActive]=useState("Todas"); const [query,setQuery]=useState("");
- const [adding,setAdding]=useState(false); const [newSubject,setNewSubject]=useState("");
- const [uploading,setUploading]=useState(false); const [error,setError]=useState("");
- const saveSubjects=(v)=>{setSubjects(v);localStorage.setItem("lpp-subjects",JSON.stringify(v))};
- const saveDocs=(v)=>{setDocs(v);localStorage.setItem("lpp-docs",JSON.stringify(v.map(({data,...d})=>d)));};
- const visible=useMemo(()=>docs.filter(d=>(active==="Todas"||d.subject===active)&&[d.title,d.name,d.subject,d.description].join(" ").toLowerCase().includes(query.toLowerCase())).sort((a,b)=>b.createdAt-a.createdAt),[docs,active,query]);
- const login=async(e)=>{e.preventDefault();setError("");if(pin.length<4){setError("Digite seu PIN de 4 a 6 números.");return}if(supabase){setError("A autenticação segura por PIN ainda precisa ser configurada no Supabase. Consulte o README.");return}if(pin==="2468"){setUnlocked(true);setPin("")}else setError("PIN incorreto. No modo de demonstração, use 2468.")};
- const addSubject=(e)=>{e.preventDefault();const n=newSubject.trim();if(n&&!subjects.includes(n))saveSubjects([...subjects,n]);setNewSubject("");setAdding(false)};
- const addFiles=async(e)=>{const files=Array.from(e.target.files||[]);if(!files.length)return;setUploading(true);setError("");const added=[];
- for(const file of files){const id=crypto.randomUUID();let data="";
- try{data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)})}catch{}
- added.push({id,title:file.name.replace(/\.[^.]+$/,""),name:file.name,subject:active==="Todas"?"Sem matéria":active,description:"",mime:file.type||"application/octet-stream",size:file.size,createdAt:Date.now(),data})}
- const next=[...added,...docs];setDocs(next);try{localStorage.setItem("lpp-docs",JSON.stringify(next))}catch{setError("Arquivo muito grande para armazenamento local. Configure o Supabase para guardar arquivos na nuvem.");setDocs(docs)}setUploading(false);e.target.value=""};
- const removeDoc=(id)=>{if(!confirm("Excluir este arquivo da biblioteca?"))return;const next=docs.filter(d=>d.id!==id);setDocs(next);localStorage.setItem("lpp-docs",JSON.stringify(next.map(({data,...d})=>d)))};
- const download=(d)=>{if(!d.data){setError("Este arquivo não está disponível neste navegador. Configure o armazenamento Supabase para sincronizar arquivos.");return}const a=document.createElement("a");a.href=d.data;a.download=d.name;a.click()};
- const open=(d)=>{if(d.data)window.open(d.data,"_blank","noopener,noreferrer");else setError("Arquivo sem cópia local. O armazenamento na nuvem ainda precisa ser configurado.")};
- const fmt=(n)=>n<1024? n+" B":n<1048576?(n/1024).toFixed(0)+" KB":(n/1048576).toFixed(1)+" MB";
- const icon=(d)=>d.mime.includes("image")?<Image/>:d.mime.includes("pdf")?<Presentation/>:d.mime.includes("presentation")?<Presentation/>:<FileText/>;
- if(!unlocked)return <main className="login"><div className="login-card"><div className="brand-mark"><BookOpen size={26}/></div><span className="eyebrow">SEU ESPAÇO ACADÊMICO</span><h1>Luis<span>.pp</span></h1><p>Seus trabalhos, suas ideias e suas matérias em um só lugar.</p><form onSubmit={login}><label htmlFor="pin">PIN de acesso</label><input id="pin" inputMode="numeric" type="password" pattern="[0-9]*" maxLength="6" placeholder="Digite seu PIN" value={pin} onChange={e=>setPin(e.target.value.replace(/\D/g,""))}/><button className="primary full" type="submit"><LockKeyhole size={17}/> Entrar</button>{error&&<p className="error">{error}</p>}</form><small>Protótipo pessoal · Modo demonstração</small></div></main>;
- return <div className="app"><aside className="sidebar"><div className="brand"><div className="brand-mark"><BookOpen/></div><div><b>Luis<span>.pp</span></b><small>ESPAÇO ACADÊMICO</small></div></div><button className={active==="Todas"?"nav active":"nav"} onClick={()=>setActive("Todas")}><FolderOpen size={18}/> Todos os trabalhos <span>{docs.length}</span></button><div className="side-heading">MINHAS MATÉRIAS <button onClick={()=>setAdding(!adding)} title="Adicionar matéria"><Plus size={16}/></button></div>{adding&&<form className="subject-form" onSubmit={addSubject}><input autoFocus value={newSubject} onChange={e=>setNewSubject(e.target.value)} placeholder="Nome da matéria"/><button aria-label="Salvar matéria"><Plus size={15}/></button></form>}<div className="subject-list">{subjects.map(s=><button key={s} className={active===s?"nav active":"nav"} onClick={()=>setActive(s)}><BookOpen size={16}/><span className="subject-name">{s}</span><span>{docs.filter(d=>d.subject===s).length}</span></button>)}</div><div className="side-bottom"><div className="tip"><div className="tip-icon">✦</div><b>Um semestre de cada vez.</b><p>Organize seus materiais e deixe tudo pronto para a próxima aula.</p></div><button className="nav logout" onClick={()=>{setUnlocked(false);setActive("Todas")}}><LogOut size={17}/> Sair</button></div></aside><main className="content"><header><div><span className="eyebrow">BIBLIOTECA PESSOAL</span><h1>{active==="Todas"?"Meus trabalhos":active}</h1><p>Um lugar para guardar tudo o que você aprende.</p></div><label className="upload-btn"><Upload size={17}/>{uploading?"Enviando...":"Adicionar arquivo"}<input type="file" multiple onChange={addFiles} hidden/></label></header>{error&&<div className="notice"><span>{error}</span><button onClick={()=>setError("")}><X size={16}/></button></div>}<section className="toolbar"><div className="search"><Search size={18}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Buscar trabalho, arquivo ou matéria..."/></div><span className="count">{visible.length} {visible.length===1?"arquivo":"arquivos"}</span></section><section className="welcome"><div><span className="eyebrow">OLÁ, LUIS AUGUSTO</span><h2>Suas ideias merecem um bom lugar.</h2><p>Guarde apresentações, textos, PDFs e referências para encontrar tudo quando precisar.</p></div><div className="welcome-art"><BookOpen size={60} strokeWidth={1.2}/><span>✦</span></div></section><div className="section-title"><div><h2>Arquivos recentes</h2><p>Os últimos materiais adicionados à sua biblioteca.</p></div><span className="recent"><Clock3 size={15}/> Atualizados recentemente</span></div>{visible.length===0?<div className="empty"><div className="empty-icon"><FolderOpen size={28}/></div><h3>{query?"Nenhum resultado encontrado":"Sua biblioteca começa aqui"}</h3><p>{query?"Tente buscar com outro termo.":"Adicione um arquivo da aula para ele aparecer aqui."}</p><label className="secondary upload-inline"><Plus size={16}/> Adicionar primeiro arquivo<input type="file" multiple hidden onChange={addFiles}/></label></div>:<div className="file-grid">{visible.map(d=><article className="file-card" key={d.id}><div className="file-top"><div className="file-icon">{icon(d)}</div><button className="icon-btn delete" title="Excluir arquivo" onClick={()=>removeDoc(d.id)}><Trash2 size={16}/></button></div><h3 title={d.title}>{d.title}</h3><p className="filename">{d.name}</p><div className="file-meta"><span>{d.subject}</span><span>{fmt(d.size)}</span></div><div className="file-actions"><button className="secondary" onClick={()=>open(d)}><ExternalLink size={15}/> Abrir</button><button className="secondary square" title="Baixar" onClick={()=>download(d)}><Download size={16}/></button></div></article>)}</div>}<footer>Luis.pp <span>·</span> Feito para acompanhar sua jornada acadêmica.</footer></main></div>
+const url = import.meta.env.VITE_SUPABASE_URL;
+const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = url && key ? createClient(url, key) : null;
+const starter = ["Fundamentos da Publicidade e Propaganda", "História Social dos Meios", "Filosofia e História das Ciências", "Oficina de Leitura e Produção Textual", "Informática Aplicada", "Ação Artística e Apreciação Estética"];
+
+function App() {
+  const [session, setSession] = useState(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [authMode, setAuthMode] = useState("login");
+  const [subjects, setSubjects] = useState(starter);
+  const [docs, setDocs] = useState([]);
+  const [active, setActive] = useState("Todas");
+  const [query, setQuery] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [newSubject, setNewSubject] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    if (!supabase) { setAuthReady(true); return; }
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (error) setError(error.message);
+      setSession(data?.session ?? null);
+      setAuthReady(true);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+    });
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!session?.user?.id || !supabase) { setDocs([]); setSubjects(starter); return; }
+    let cancelled = false;
+    (async () => {
+      setError("");
+      const [subjectResult, docResult] = await Promise.all([
+        supabase.from("subjects").select("id,name").order("name"),
+        supabase.from("documents").select("id,title,name,subject,description,storage_path,mime_type,size_bytes,created_at").order("created_at", { ascending: false })
+      ]);
+      if (cancelled) return;
+      if (subjectResult.error) setError("Não consegui carregar as matérias: " + subjectResult.error.message);
+      else setSubjects([...new Set([...starter, ...(subjectResult.data || []).map(s => s.name)])]);
+      if (docResult.error) setError("Não consegui carregar os arquivos: " + docResult.error.message);
+      else setDocs((docResult.data || []).map(d => ({ id:d.id, title:d.title, name:d.name, subject:d.subject, description:d.description, path:d.storage_path, mime:d.mime_type, size:Number(d.size_bytes), createdAt:new Date(d.created_at).getTime() })));
+    })();
+    return () => { cancelled = true; };
+  }, [session?.user?.id]);
+
+  const login = async (e) => {
+    e.preventDefault(); setError(""); setNotice("");
+    if (!supabase) { setError("A conexão com o Supabase ainda não está configurada neste deploy."); return; }
+    if (!email.trim() || password.length < 8) { setError("Informe seu e-mail e uma senha com pelo menos 8 caracteres."); return; }
+    setBusy(true);
+    try {
+      if (authMode === "signup") {
+        const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
+        if (error) throw error;
+        if (data.session) setNotice("Conta criada e acesso liberado.");
+        else setNotice("Conta criada. Confira seu e-mail para confirmar o cadastro e depois entre.");
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        if (error) throw error;
+      }
+      setPassword("");
+    } catch (e) { setError(e.message || "Não foi possível autenticar."); }
+    finally { setBusy(false); }
+  };
+
+  const addSubject = async (e) => {
+    e.preventDefault();
+    const name = newSubject.trim();
+    if (!name || subjects.includes(name)) { setNewSubject(""); setAdding(false); return; }
+    const { error } = await supabase.from("subjects").insert({ name, user_id: session.user.id });
+    if (error) { setError("Não consegui salvar a matéria: " + error.message); return; }
+    setSubjects(prev => [...prev, name].sort((a,b)=>a.localeCompare(b,"pt-BR")));
+    setNewSubject(""); setAdding(false);
+  };
+
+  const addFiles = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length || !session?.user) return;
+    setUploading(true); setError(""); setNotice("");
+    const added = [];
+    try {
+      for (const file of files) {
+        const id = crypto.randomUUID();
+        const path = session.user.id + "/" + id + "-" + file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const { error: uploadError } = await supabase.storage.from("academic-files").upload(path, file, { contentType: file.type || "application/octet-stream", upsert: false });
+        if (uploadError) throw uploadError;
+        const subject = active === "Todas" ? "Sem matéria" : active;
+        const row = { id, user_id: session.user.id, title: file.name.replace(/\.[^.]+$/, ""), name: file.name, subject, description: "", storage_path: path, mime_type: file.type || "application/octet-stream", size_bytes: file.size };
+        const { data, error: insertError } = await supabase.from("documents").insert(row).select("id,title,name,subject,description,storage_path,mime_type,size_bytes,created_at").single();
+        if (insertError) {
+          await supabase.storage.from("academic-files").remove([path]);
+          throw insertError;
+        }
+        added.push({ id:data.id, title:data.title, name:data.name, subject:data.subject, description:data.description, path:data.storage_path, mime:data.mime_type, size:Number(data.size_bytes), createdAt:new Date(data.created_at).getTime() });
+      }
+      setDocs(prev => [...added, ...prev].sort((a,b)=>b.createdAt-a.createdAt));
+      if (added.length) setNotice(added.length + (added.length === 1 ? " arquivo enviado para sua biblioteca." : " arquivos enviados para sua biblioteca."));
+    } catch (e) { setError("Falha ao enviar arquivo. " + (e.message || "Verifique o bucket e as permissões do Supabase.")); }
+    finally { setUploading(false); e.target.value = ""; }
+  };
+
+  const removeDoc = async (doc) => {
+    if (!confirm("Excluir este arquivo da biblioteca? Esta ação não pode ser desfeita.")) return;
+    setError(""); setNotice("");
+    const { error: storageError } = await supabase.storage.from("academic-files").remove([doc.path]);
+    if (storageError) { setError("Não consegui excluir o arquivo: " + storageError.message); return; }
+    const { error: rowError } = await supabase.from("documents").delete().eq("id", doc.id);
+    if (rowError) { setError("Arquivo removido do armazenamento, mas o registro não pôde ser apagado: " + rowError.message); return; }
+    setDocs(prev => prev.filter(d => d.id !== doc.id));
+  };
+
+  const getUrl = async (doc) => {
+    const { data, error } = await supabase.storage.from("academic-files").createSignedUrl(doc.path, 60);
+    if (error) { setError("Não consegui abrir o arquivo: " + error.message); return; }
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  };
+  const visible = useMemo(() => docs.filter(d => (active === "Todas" || d.subject === active) && [d.title,d.name,d.subject,d.description].join(" ").toLowerCase().includes(query.toLowerCase())).sort((a,b)=>b.createdAt-a.createdAt), [docs,active,query]);
+  const fmt = n => n < 1024 ? n + " B" : n < 1048576 ? (n/1024).toFixed(0) + " KB" : (n/1048576).toFixed(1) + " MB";
+  const fileIcon = d => d.mime.includes("image") ? <ImageIcon/> : d.mime.includes("pdf") || d.mime.includes("presentation") ? <Presentation/> : <FileText/>;
+
+  if (!authReady) return <main className="login"><div className="login-card"><div className="brand-mark"><BookOpen size={26}/></div><h1>Luis<span>.pp</span></h1><p>Conectando ao seu espaço acadêmico…</p></div></main>;
+  if (!session) return <main className="login"><div className="login-card"><div className="brand-mark"><BookOpen size={26}/></div><span className="eyebrow">SEU ESPAÇO ACADÊMICO</span><h1>Luis<span>.pp</span></h1><p>Seus trabalhos, suas ideias e suas matérias em um só lugar.</p><form onSubmit={login}><label htmlFor="email">E-mail</label><input id="email" type="email" autoComplete="email" required placeholder="voce@exemplo.com" value={email} onChange={e=>setEmail(e.target.value)}/><label htmlFor="password">Senha</label><input id="password" type="password" autoComplete={authMode === "login" ? "current-password" : "new-password"} minLength={8} required placeholder="Pelo menos 8 caracteres" value={password} onChange={e=>setPassword(e.target.value)}/><button className="primary full" type="submit" disabled={busy}><LockKeyhole size={17}/>{busy ? "Aguarde…" : authMode === "login" ? "Entrar com segurança" : "Criar minha conta"}</button>{error&&<p className="error">{error}</p>}{notice&&<p className="success">{notice}</p>}</form><button className="auth-switch" onClick={()=>{setAuthMode(authMode==="login"?"signup":"login");setError("");setNotice("");}}>{authMode==="login"?"Ainda não tem conta? Criar conta":"Já tem conta? Entrar"}</button><small>Seus arquivos ficam privados na nuvem.</small></div></main>;
+
+  return <div className="app"><aside className="sidebar"><div className="brand"><div className="brand-mark"><BookOpen/></div><div><b>Luis<span>.pp</span></b><small>ESPAÇO ACADÊMICO</small></div></div><button className={active==="Todas"?"nav active":"nav"} onClick={()=>setActive("Todas")}><FolderOpen size={18}/> Todos os trabalhos <span>{docs.length}</span></button><div className="side-heading">MINHAS MATÉRIAS <button onClick={()=>setAdding(!adding)} title="Adicionar matéria"><Plus size={16}/></button></div>{adding&&<form className="subject-form" onSubmit={addSubject}><input autoFocus value={newSubject} onChange={e=>setNewSubject(e.target.value)} placeholder="Nome da matéria"/><button aria-label="Salvar matéria"><Plus size={15}/></button></form>}<div className="subject-list">{subjects.map(s=><button key={s} className={active===s?"nav active":"nav"} onClick={()=>setActive(s)}><BookOpen size={16}/><span className="subject-name">{s}</span><span>{docs.filter(d=>d.subject===s).length}</span></button>)}</div><div className="side-bottom"><div className="tip"><div className="tip-icon">✦</div><b>Um semestre de cada vez.</b><p>Organize seus materiais e deixe tudo pronto para a próxima aula.</p></div><button className="nav logout" onClick={async()=>{await supabase.auth.signOut();setActive("Todas");}}><LogOut size={17}/> Sair</button></div></aside><main className="content"><header><div><span className="eyebrow">BIBLIOTECA PESSOAL</span><h1>{active==="Todas"?"Meus trabalhos":active}</h1><p>Um lugar para guardar tudo o que você aprende.</p></div><label className="upload-btn"><Upload size={17}/>{uploading?"Enviando…":"Adicionar arquivo"}<input type="file" multiple onChange={addFiles} hidden disabled={uploading}/></label></header>{(error||notice)&&<div className={error?"notice":"notice success-notice"}><span>{error||notice}</span><button onClick={()=>{setError("");setNotice("");}}><X size={16}/></button></div>}<section className="toolbar"><div className="search"><Search size={18}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Buscar trabalho, arquivo ou matéria..."/></div><span className="count">{visible.length} {visible.length===1?"arquivo":"arquivos"}</span></section><section className="welcome"><div><span className="eyebrow">OLÁ, {session.user.email?.split("@")[0]?.toUpperCase() || "ESTUDANTE"}</span><h2>Suas ideias merecem um bom lugar.</h2><p>Guarde apresentações, textos, PDFs e referências para encontrar tudo quando precisar.</p></div><div className="welcome-art"><BookOpen size={60} strokeWidth={1.2}/><span>✦</span></div></section><div className="section-title"><div><h2>Arquivos recentes</h2><p>Os últimos materiais adicionados à sua biblioteca.</p></div><span className="recent"><Clock3 size={15}/> Atualizados recentemente</span></div>{visible.length===0?<div className="empty"><div className="empty-icon"><FolderOpen size={28}/></div><h3>{query?"Nenhum resultado encontrado":"Sua biblioteca começa aqui"}</h3><p>{query?"Tente buscar com outro termo.":"Adicione um arquivo da aula para ele aparecer aqui."}</p><label className="secondary upload-inline"><Plus size={16}/> Adicionar primeiro arquivo<input type="file" multiple hidden onChange={addFiles}/></label></div>:<div className="file-grid">{visible.map(d=><article className="file-card" key={d.id}><div className="file-top"><div className="file-icon">{fileIcon(d)}</div><button className="icon-btn delete" title="Excluir arquivo" onClick={()=>removeDoc(d)}><Trash2 size={16}/></button></div><h3 title={d.title}>{d.title}</h3><p className="filename">{d.name}</p><div className="file-meta"><span>{d.subject}</span><span>{fmt(d.size)}</span></div><div className="file-actions"><button className="secondary" onClick={()=>getUrl(d)}><ExternalLink size={15}/> Abrir</button><button className="secondary square" title="Baixar" onClick={()=>getUrl(d)}><Download size={16}/></button></div></article>)}</div>}<footer>Luis.pp <span>·</span> Feito para acompanhar sua jornada acadêmica.</footer></main></div>;
 }
 createRoot(document.getElementById("root")).render(<App/>);
