@@ -4,6 +4,7 @@ create extension if not exists pgcrypto;
 create table if not exists public.subjects (
   id uuid primary key default gen_random_uuid(),
   name text not null,
+  semester text not null default '2026.1',
   created_at timestamptz not null default now()
 );
 create table if not exists public.documents (
@@ -38,9 +39,11 @@ grant select, insert, update, delete on public.semesters to authenticated;
 alter table public.documents add column if not exists semester text not null default '2026.1';
 
 alter table public.subjects add column if not exists user_id uuid references auth.users(id) on delete cascade;
+alter table public.subjects add column if not exists semester text not null default '2026.1';
 alter table public.documents add column if not exists user_id uuid references auth.users(id) on delete cascade;
 alter table public.subjects drop constraint if exists subjects_name_key;
-create unique index if not exists subjects_user_name_unique on public.subjects(user_id, name);
+drop index if exists public.subjects_user_name_unique;
+create unique index if not exists subjects_user_semester_name_unique on public.subjects(user_id, semester, name);
 create index if not exists subjects_user_id_idx on public.subjects(user_id);
 create index if not exists documents_user_created_idx on public.documents(user_id, created_at desc);
 
