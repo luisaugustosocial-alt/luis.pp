@@ -1,0 +1,21 @@
+{
+  "id": "/",
+  "name": "Luis.pp — Espaço acadêmico",
+  "short_name": "Luis.pp",
+  "description": "Seu espaço acadêmico pessoal.",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#eaf5ff",
+  "theme_color": "#1d5fa7",
+  "icons": [
+    {
+      "src": "/icons/luispp-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
