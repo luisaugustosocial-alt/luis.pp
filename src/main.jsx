@@ -113,7 +113,7 @@ function App() {
     const name = newSubject.trim();
     if (!name || subjects.includes(name)) { setNewSubject(""); setAdding(false); return; }
     const { error } = await supabase.from("subjects").upsert(
-      { name, semester: activeSemester, user_id: session.user.id },
+      { name, semester: activeSemester, user_id: WORKSPACE_OWNER_ID },
       { onConflict: "user_id,semester,name", ignoreDuplicates: true }
     );
     if (error) { setError("Não consegui salvar a matéria: " + error.message); return; }
@@ -134,7 +134,7 @@ function App() {
         const { error: uploadError } = await supabase.storage.from("academic-files").upload(path, file, { contentType: file.type || "application/octet-stream", upsert: false });
         if (uploadError) throw uploadError;
         const subject = active === "Todas" ? "Sem matéria" : active;
-        const row = { id, user_id: session.user.id, semester: activeSemester, title: file.name.replace(/\.[^.]+$/, ""), name: file.name, subject, description: "", storage_path: path, mime_type: file.type || "application/octet-stream", size_bytes: file.size };
+        const row = { id, user_id: WORKSPACE_OWNER_ID, semester: activeSemester, title: file.name.replace(/\.[^.]+$/, ""), name: file.name, subject, description: "", storage_path: path, mime_type: file.type || "application/octet-stream", size_bytes: file.size };
         const { data, error: insertError } = await supabase.from("documents").insert(row).select("id,title,name,subject,description,storage_path,mime_type,size_bytes,created_at").single();
         if (insertError) {
           await supabase.storage.from("academic-files").remove([path]);
