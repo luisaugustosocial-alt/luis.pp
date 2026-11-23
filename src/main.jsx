@@ -90,9 +90,13 @@ function App() {
     e.preventDefault();
     const name = newSubject.trim();
     if (!name || subjects.includes(name)) { setNewSubject(""); setAdding(false); return; }
-    const { error } = await supabase.from("subjects").insert({ name, semester: activeSemester, user_id: session.user.id });
+    const { error } = await supabase.from("subjects").upsert(
+      { name, semester: activeSemester, user_id: session.user.id },
+      { onConflict: "user_id,semester,name", ignoreDuplicates: true }
+    );
     if (error) { setError("Não consegui salvar a matéria: " + error.message); return; }
-    setSubjects(prev => [...prev, name].sort((a,b)=>a.localeCompare(b,"pt-BR")));
+    setSubjects(prev => [...new Set([...prev, name])].sort((a,b)=>a.localeCompare(b,"pt-BR")));
+    setNotice("Matéria adicionada à lista.");
     setNewSubject(""); setAdding(false);
   };
 
