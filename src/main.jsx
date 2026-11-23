@@ -67,8 +67,8 @@ function App() {
   useEffect(() => {
     if (!session?.user?.id || !workspaceReady || !supabase) { setDocs([]); setSubjects(activeSemester === "2026.1" ? starter : []); return; }
     let cancelled = false;
-    (async () => {
-      setError("");
+
+    const refreshWorkspace = async () => {
       const [subjectResult, docResult, semesterResult] = await Promise.all([
         supabase.from("subjects").select("id,name,semester").eq("semester", activeSemester).order("name"),
         supabase.from("documents").select("id,title,name,subject,semester,description,storage_path,mime_type,size_bytes,created_at").order("created_at", { ascending: false }),
@@ -81,8 +81,21 @@ function App() {
       else setDocs((docResult.data || []).map(d => ({ id:d.id, title:d.title, name:d.name, subject:d.subject, semester:d.semester || "2026.1", description:d.description, path:d.storage_path, mime:d.mime_type, size:Number(d.size_bytes), createdAt:new Date(d.created_at).getTime() })));
       if (semesterResult.error) setError("Não consegui carregar os semestres: " + semesterResult.error.message);
       else { const list = [...new Set(["2026.1", ...(semesterResult.data || []).map(s => s.name)])]; setSemesters(list); setActiveSemester(current => list.includes(current) ? current : list[0]); }
-    })();
-    return () => { cancelled = true; };
+    };
+
+    setError("");
+    refreshWorkspace();
+    const channel = supabase
+      .channel("luispp-workspace-sync-" + session.user.id + "-" + activeSemester)
+      .on("postgres_changes", { event: "*", schema: "public", table: "documents" }, refreshWorkspace)
+      .on("postgres_changes", { event: "*", schema: "public", table: "subjects" }, refreshWorkspace)
+      .on("postgres_changes", { event: "*", schema: "public", table: "semesters" }, refreshWorkspace)
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
   }, [session?.user?.id, workspaceReady, activeSemester]);
 
   const login = async (e) => {
