@@ -8,11 +8,13 @@ const url = import.meta.env.VITE_SUPABASE_URL;
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = url && key ? createClient(url, key) : null;
 const ACCESS_PIN = "1029";
+const WORKSPACE_OWNER_ID = "ead61e7c-19bc-462d-8055-90fd9768de26";
 const starter = ["Fundamentos da Publicidade e Propaganda", "História Social dos Meios", "Filosofia e História das Ciências", "Oficina de Leitura e Produção Textual", "Informática Aplicada", "Ação Artística e Apreciação Estética"];
 
 function App() {
   const [session, setSession] = useState(null);
   const [authReady, setAuthReady] = useState(false);
+  const [workspaceReady, setWorkspaceReady] = useState(false);
   const [password, setPassword] = useState("");
   const [semesters, setSemesters] = useState(["2026.1"]);
   const [activeSemester, setActiveSemester] = useState("2026.1");
@@ -38,12 +40,32 @@ function App() {
     });
     const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);
+      if (!nextSession) setWorkspaceReady(false);
     });
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  // Registra o dispositivo no espaço compartilhado após validar o PIN.
   useEffect(() => {
-    if (!session?.user?.id || !supabase) { setDocs([]); setSubjects(activeSemester === "2026.1" ? starter : []); return; }
+    if (!session?.user?.id || !supabase) { setWorkspaceReady(false); return; }
+    let cancelled = false;
+    (async () => {
+      const { error } = await supabase.rpc("join_workspace", { p_pin: ACCESS_PIN });
+      if (cancelled) return;
+      if (error) {
+        setWorkspaceReady(false);
+        setError("Não consegui validar o acesso ao espaço compartilhado: " + error.message);
+        await supabase.auth.signOut();
+        return;
+      }
+      setError("");
+      setWorkspaceReady(true);
+    })();
+    return () => { cancelled = true; };
+  }, [session?.user?.id]);
+
+  useEffect(() => {
+    if (!session?.user?.id || !workspaceReady || !supabase) { setDocs([]); setSubjects(activeSemester === "2026.1" ? starter : []); return; }
     let cancelled = false;
     (async () => {
       setError("");
@@ -61,7 +83,7 @@ function App() {
       else { const list = [...new Set(["2026.1", ...(semesterResult.data || []).map(s => s.name)])]; setSemesters(list); setActiveSemester(current => list.includes(current) ? current : list[0]); }
     })();
     return () => { cancelled = true; };
-  }, [session?.user?.id, activeSemester]);
+  }, [session?.user?.id, workspaceReady, activeSemester]);
 
   const login = async (e) => {
     e.preventDefault(); setError(""); setNotice("");
@@ -71,7 +93,7 @@ function App() {
     try {
       const { error } = await supabase.auth.signInAnonymously();
       if (error) throw error;
-      setNotice("Acesso liberado."); setPassword("");
+      setNotice("Validando seu espaço…"); setPassword("");
     } catch (e) { setError("Não foi possível abrir seu espaço. " + (e.message || "Confira se o acesso anônimo está habilitado no Supabase.")); }
     finally { setBusy(false); }
   };
@@ -80,7 +102,7 @@ function App() {
     e.preventDefault();
     const name = newSemester.trim();
     if (!name || semesters.includes(name)) { setNewSemester(""); setAddingSemester(false); return; }
-    const { error } = await supabase.from("semesters").insert({ name, user_id: session.user.id });
+    const { error } = await supabase.from("semesters").insert({ name, user_id: WORKSPACE_OWNER_ID });
     if (error) { setError("Não consegui salvar o semestre: " + error.message); return; }
     setSemesters(prev => [...prev, name].sort((a,b)=>a.localeCompare(b,"pt-BR",{numeric:true})));
     setActiveSemester(name); setNewSemester(""); setAddingSemester(false); setNotice("Semestre " + name + " adicionado.");
@@ -108,7 +130,7 @@ function App() {
     try {
       for (const file of files) {
         const id = crypto.randomUUID();
-        const path = session.user.id + "/" + id + "-" + file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const path = WORKSPACE_OWNER_ID + "/" + id + "-" + file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
         const { error: uploadError } = await supabase.storage.from("academic-files").upload(path, file, { contentType: file.type || "application/octet-stream", upsert: false });
         if (uploadError) throw uploadError;
         const subject = active === "Todas" ? "Sem matéria" : active;
