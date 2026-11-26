@@ -1,4 +1,4 @@
-const CACHE_NAME = "luispp-pwa-v2";
+const CACHE_NAME = "luispp-pwa-v3";
 const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/icons/luispp-icon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -36,4 +36,37 @@ self.addEventListener("fetch", (event) => {
       return response;
     })));
   }
+});
+
+// Web Push: recebe avisos enviados pelo servidor mesmo com o app fechado.
+self.addEventListener("push", (event) => {
+  let payload = {};
+  try { payload = event.data ? event.data.json() : {}; }
+  catch { payload = { title: "Luis.pp", body: event.data?.text() || "Você tem um novo lembrete acadêmico." }; }
+  const title = payload.title || "Luis.pp · Lembrete acadêmico";
+  const options = {
+    body: payload.body || "Você tem uma atividade para lembrar.",
+    icon: "/icons/luispp-icon.svg",
+    badge: "/icons/luispp-icon.svg",
+    tag: payload.tag || "luispp-academic-reminder",
+    renotify: true,
+    data: { url: payload.url || "/?pagina=Planejamento" }
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = new URL(event.notification.data?.url || "/?pagina=Planejamento", self.location.origin).href;
+  event.waitUntil((async () => {
+    const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const client of windows) {
+      if ("focus" in client) {
+        await client.focus();
+        if ("navigate" in client) await client.navigate(target);
+        return;
+      }
+    }
+    if (self.clients.openWindow) await self.clients.openWindow(target);
+  })());
 });
