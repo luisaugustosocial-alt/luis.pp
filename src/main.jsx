@@ -274,7 +274,10 @@ function App() {
       if (cancelled) return;
       if (error) setError("Não consegui carregar as notas: " + error.message);
       setGradeData(data?.grade_data && Array.isArray(data.grade_data.columns) ? data.grade_data : emptyGradeData);
-      setAttendanceData(data?.attendance_data && Array.isArray(data.attendance_data.records) ? data.attendance_data : {records:[]});
+      const nextAttendance = data?.attendance_data && Array.isArray(data.attendance_data.records) ? data.attendance_data : {records:[]};
+      setAttendanceData(nextAttendance);
+      setAttendanceUnits(String(nextAttendance.config?.unitsPerDay || 1));
+      setAttendanceMax(String(nextAttendance.config?.maxAbsences || 16));
       setGradeLoading(false);
     })();
     return () => { cancelled = true; };
