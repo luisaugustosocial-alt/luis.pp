@@ -226,7 +226,7 @@ function App() {
     let cancelled=false;
     const loadNotices=async()=>{
       setNoticeLoading(true);
-      const {data,error}=await supabase.from("academic_notices").select("id,title,body,kind,subject,due_date,pinned,created_at,updated_at").eq("user_id",WORKSPACE_OWNER_ID).eq("semester",activeSemester).order("pinned",{ascending:false}).order("due_date",{ascending:true,nullsFirst:false}).order("created_at",{ascending:false});
+      const {data,error}=await supabase.from("academic_notices").select("id,title,body,kind,subject,due_date,pinned,created_at,updated_at,notification_config").eq("user_id",WORKSPACE_OWNER_ID).eq("semester",activeSemester).order("pinned",{ascending:false}).order("due_date",{ascending:true,nullsFirst:false}).order("created_at",{ascending:false});
       if(cancelled)return;
       if(error)setError("Não foi possível carregar o mural: "+error.message); else setNoticeItems(data||[]);
       setNoticeLoading(false);
@@ -244,7 +244,7 @@ function App() {
       setPlannerLoading(true);
       const { data, error } = await supabase
         .from("academic_planner")
-        .select("id,title,category,due_date,due_time,subject,description,completed,created_at")
+        .select("id,title,category,due_date,due_time,subject,description,completed,created_at,notification_config")
         .eq("user_id", WORKSPACE_OWNER_ID)
         .order("due_date", { ascending: true })
         .order("due_time", { ascending: true });
@@ -267,8 +267,8 @@ function App() {
     const { data, error } = await supabase.from("academic_planner").insert({
       user_id: WORKSPACE_OWNER_ID, title: plannerTitle.trim(), category: plannerCategory,
       due_date: plannerDate, due_time: plannerTime || null, subject: plannerSubject || null,
-      description: plannerDescription.trim()
-    }).select("id,title,category,due_date,due_time,subject,description,completed,created_at").single();
+      description: plannerDescription.trim(), notification_config: plannerNotify
+    }).select("id,title,category,due_date,due_time,subject,description,completed,created_at,notification_config").single();
     setPlannerLoading(false);
     if (error) { setError("Não consegui salvar a atividade: " + error.message); return; }
     setPlannerItems(prev => [...prev, data].sort((a,b) => (a.due_date + (a.due_time || "")).localeCompare(b.due_date + (b.due_time || ""))));
@@ -284,7 +284,7 @@ function App() {
     setPlannerItems(prev => prev.map(x => x.id === item.id ? { ...x, completed: !x.completed } : x));
   };
 
-  const editPlannerItem = (item) => { setEditRecord({kind:"planner",id:item.id}); setEditForm({title:item.title||"",category:item.category||"Prova",due_date:item.due_date||localDateKey(),due_time:item.due_time||"",subject:item.subject||"",description:item.description||"",completed:!!item.completed}); };
+  const editPlannerItem = (item) => { setEditRecord({kind:"planner",id:item.id}); setEditForm({title:item.title||"",category:item.category||"Prova",due_date:item.due_date||localDateKey(),due_time:item.due_time||"",subject:item.subject||"",description:item.description||"",completed:!!item.completed,notification_config:item.notification_config||{enabled:false,mode:"once",offset_minutes:1440,days:[],times:["08:00"]}}); };
   const deletePlannerItem = async (item) => {
     if (!window.confirm("Excluir esta atividade do planejamento?")) return;
     const { error } = await supabase.from("academic_planner").delete().eq("id", item.id).eq("user_id", WORKSPACE_OWNER_ID);
@@ -326,20 +326,20 @@ function App() {
     if(error){setError("Não consegui salvar no mural: "+error.message);return;}
     setNoticeItems(prev=>[data,...prev]);setNoticeTitle("");setNoticeBody("");setNoticeKind("Anotação");setNoticeSubject("");setNoticeDate("");setNoticeNotify({enabled:false,mode:"once",offset_minutes:1440,days:[],times:["08:00"]});setNotice("Anotação adicionada ao mural.");
   };
-  const editNotice = (item) => { setEditRecord({kind:"notice",id:item.id}); setEditForm({title:item.title||"",body:item.body||"",kind:item.kind||"Anotação",subject:item.subject||"",due_date:item.due_date||"",pinned:!!item.pinned}); };
+  const editNotice = (item) => { setEditRecord({kind:"notice",id:item.id}); setEditForm({title:item.title||"",body:item.body||"",kind:item.kind||"Anotação",subject:item.subject||"",due_date:item.due_date||"",pinned:!!item.pinned,notification_config:item.notification_config||{enabled:false,mode:"once",offset_minutes:1440,days:[],times:["08:00"]}}); };
   const saveEditRecord = async (e) => {
     e.preventDefault(); if(!editRecord)return; setEditSaving(true);setError("");setNotice("");
     try {
       if(editRecord.kind==="planner"){
         const v=editForm;if(!v.title?.trim()||!/^\d{4}-\d{2}-\d{2}$/.test(v.due_date||""))throw new Error("Informe o nome e uma data válida.");
-        const {data,error}=await supabase.from("academic_planner").update({title:v.title.trim(),category:v.category,due_date:v.due_date,due_time:v.due_time||null,subject:v.subject||null,description:v.description||"",completed:!!v.completed}).eq("id",editRecord.id).eq("user_id",WORKSPACE_OWNER_ID).select("id,title,category,due_date,due_time,subject,description,completed,created_at").single();if(error)throw error;
+        const {data,error}=await supabase.from("academic_planner").update({title:v.title.trim(),category:v.category,due_date:v.due_date,due_time:v.due_time||null,subject:v.subject||null,description:v.description||"",completed:!!v.completed,notification_config:v.notification_config||{enabled:false}}).eq("id",editRecord.id).eq("user_id",WORKSPACE_OWNER_ID).select("id,title,category,due_date,due_time,subject,description,completed,created_at").single();if(error)throw error;
         setPlannerItems(prev=>prev.map(x=>x.id===data.id?data:x).sort((a,b)=>(a.due_date+(a.due_time||"")).localeCompare(b.due_date+(b.due_time||""))));if(selectedPlannerItem?.id===data.id)setSelectedPlannerItem(data);setNotice("Atividade atualizada.");
       } else if(editRecord.kind==="grade"){
         const v=editForm,max=Number(v.maxScore),score=v.score===""?"":Number(v.score);if(!v.name?.trim()||!Number.isFinite(max)||max<=0)throw new Error("Informe nome e valor máximo válido.");if(v.score!==""&&(!Number.isFinite(score)||score<0||score>max))throw new Error("A nota deve estar entre zero e o valor máximo.");
         await persistGradeData({...gradeData,columns:gradeData.columns.map(c=>c.id===editRecord.id?{...c,name:v.name.trim(),type:v.type,maxScore:max,score:v.score}:c)});
       } else {
         const v=editForm;if(!v.title?.trim()||!["Aviso urgente","Lembrete","Anotação"].includes(v.kind)||(v.due_date&&!/^\d{4}-\d{2}-\d{2}$/.test(v.due_date)))throw new Error("Confira título, tipo e data.");
-        const {data,error}=await supabase.from("academic_notices").update({title:v.title.trim(),body:v.body||"",kind:v.kind,subject:v.subject||null,due_date:v.due_date||null,pinned:!!v.pinned,updated_at:new Date().toISOString()}).eq("id",editRecord.id).eq("user_id",WORKSPACE_OWNER_ID).select("id,title,body,kind,subject,due_date,pinned,created_at,updated_at").single();if(error)throw error;
+        const {data,error}=await supabase.from("academic_notices").update({title:v.title.trim(),body:v.body||"",kind:v.kind,subject:v.subject||null,due_date:v.due_date||null,pinned:!!v.pinned,notification_config:v.notification_config||{enabled:false},updated_at:new Date().toISOString()}).eq("id",editRecord.id).eq("user_id",WORKSPACE_OWNER_ID).select("id,title,body,kind,subject,due_date,pinned,created_at,updated_at").single();if(error)throw error;
         setNoticeItems(prev=>prev.map(x=>x.id===data.id?data:x));setNotice("Registro do mural atualizado.");
       }
       setEditRecord(null);setEditForm({});
