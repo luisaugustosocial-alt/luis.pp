@@ -380,3 +380,72 @@ button:focus-visible,.upload-btn:focus-within{outline:3px solid rgba(91,43,255,.
  .scroll-reveal{opacity:1!important;transform:none!important;transition:none!important}
  .primary,.secondary,.upload-btn,.attendance-settings-toggle,.planner-month-actions button,.planner-check,.planner-delete,.icon-btn,.grade-remove,.mobile-subject-chip{transition:none!important}
 }
+
+
+/* Identidade unificada: azul royal escuro em todos os controles e destaques. */
+:root{
+  --violet:#1746B8;--violet-shadow:#0D2F83;--violet-light:#4779E6;
+  --night:#102B63;--muted:#42577D;--line:#B9CBEF;--section:#E8EFFB;
+  --paper:#F4F7FD;--shadow-violet:0 5px 0 #0D2F83;
+  --shadow-card:0 7px 0 #D7E2F5;
+}
+body{color:var(--night);background:radial-gradient(ellipse at 12% 8%,rgba(23,70,184,.10),transparent 38%),radial-gradient(ellipse at 88% 18%,rgba(71,121,230,.09),transparent 34%),#F4F7FD}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(23,70,184,.42)!important;outline-offset:3px}
+.nav,.nav.active,.mobile-subject-chip,.notes-subject-card,.notes-subject-card:nth-child(n),
+.side-heading button,.subject-form button,.semester-picker,.semester-picker button,
+.upload-btn,.primary,.login .primary,.secondary,.icon-btn,.grade-remove,
+.notes-back-library,.back-link,.attendance-settings-toggle,.planner-month-actions button,
+.planner-today,.planner-calendar-grid button.selected,.planner-list-heading>button,
+.planner-check,.planner-delete,.notice button{
+  background:#1746B8!important;color:#fff!important;border-color:#1746B8!important;
+  box-shadow:0 4px 0 #0D2F83!important;
+}
+.nav svg,.nav.active svg,.icon-btn svg,.planner-month-actions button svg,
+.planner-check svg,.planner-delete svg{color:#fff!important}
+.nav:hover,.mobile-subject-chip:hover,.notes-subject-card:hover,.secondary:hover,
+.icon-btn:hover,.planner-month-actions button:hover,.planner-check:hover,
+.planner-delete:hover,.notes-back-library:hover,.back-link:hover{
+  background:#2459D0!important;color:#fff!important;filter:brightness(1.04)
+}
+.nav.active{background:#0D2F83!important}
+.nav.active,.nav.active svg{color:#fff!important}
+.notes-subject-card:nth-child(4n+2),.notes-subject-card:nth-child(4n+3),
+.notes-subject-card:nth-child(4n){background:#1746B8!important;color:#fff!important;box-shadow:0 5px 0 #0D2F83!important}
+.notes-card-icon{background:rgba(255,255,255,.18)!important;color:#fff!important;box-shadow:none!important}
+.notes-card-copy,.notes-card-copy b,.notes-card-copy small,.notes-card-copy em,.notes-card-arrow{color:#fff!important}
+.notes-intro{background:#1746B8!important;color:#fff!important;box-shadow:0 6px 0 #0D2F83!important}
+.notes-intro b,.notes-intro span{color:#fff!important}
+.notes-intro-icon{background:rgba(255,255,255,.18)!important;color:#fff!important;box-shadow:none!important}
+.welcome{background:linear-gradient(125deg,#1746B8,#2459D0)!important;box-shadow:0 7px 0 #0D2F83!important}
+.welcome-art{background:rgba(255,255,255,.16)!important;color:#fff!important;box-shadow:none!important}
+.welcome-art span{color:#fff!important}
+.file-icon,.empty-icon{background:#1746B8!important;color:#fff!important;box-shadow:0 4px 0 #0D2F83!important}
+.planner-calendar-grid button.selected{background:#1746B8!important;color:#fff!important}
+.planner-calendar-grid button.has-items:after{background:#1746B8}
+.planner-date{background:#1746B8!important;color:#fff!important}
+.grade-summary .approved,.grade-summary .failed,.grade-summary .pending{background:#1746B8!important;color:#fff!important;box-shadow:0 4px 0 #0D2F83!important}
+.grade-summary .grade-status{color:#fff!important}
+.semester-picker{background:#102B63!important}
+.semester-picker select,.semester-picker select option{color:#fff!important}
+.upload-btn:active,.primary:active,.secondary:active,.nav:active,.notes-subject-card:active{box-shadow:0 2px 0 #0D2F83!important}
+.icon-btn.delete,.grade-remove,.planner-delete,.attendance-record button{background:#1746B8!important;color:#fff!important}
+.attendance-settings-toggle{border-color:#1746B8!important}
+.attendance-settings{border-color:#B9CBEF!important}
+.attendance-schedule-list>span,.planner-category,.activity-type{background:#E8EFFB!important;color:#1746B8!important}
+.search,.activity-form,.planner-form input,.planner-form select,.planner-form textarea{border-color:#B9CBEF!important}
+.search{color:#1746B8!important}
+.eyebrow,.count,.file-meta span:first-child,.planner-today{color:#1746B8!important}
+@media(max-width:700px){
+  .sidebar>.nav,.side-bottom{max-width:25%;flex:1}
+  .sidebar>.nav{min-height:64px;padding:7px 4px;gap:5px;justify-content:center;border-radius:15px;font-size:9px;line-height:1.25;text-align:center;white-space:normal}
+  .sidebar>.nav svg{width:20px;height:20px;flex:none}
+  .sidebar>.nav span{min-width:0;overflow-wrap:anywhere}
+  .side-bottom{display:flex;align-items:center;justify-content:center}
+  .side-bottom .nav{width:100%;min-height:64px;padding:7px 4px;gap:5px;justify-content:center;border-radius:15px;font-size:9px;line-height:1.25;text-align:center;white-space:normal}
+  .notes-subject-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .notes-subject-card{min-height:108px;padding:13px;gap:9px}
+  .notes-card-copy b{font-size:clamp(11px,3.1vw,14px);line-height:1.3;overflow-wrap:anywhere}
+  .notes-card-copy em{line-height:1.35}
+  .notes-intro{align-items:center}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
