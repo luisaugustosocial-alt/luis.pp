@@ -480,3 +480,180 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
     flex:none!important;width:40px!important;height:40px!important;
     background:#1746B8!important;color:#fff!important;border-radius:50%!important}
 }
+
+
+/* Revisão estrutural completa: navegação, cabeçalho da disciplina e áreas seguras. */
+html,body,#root{width:100%;max-width:100%;overflow-x:clip}
+.app{width:100%;max-width:100%;overflow-x:clip}
+.content{min-width:0}
+.discipline-page,.notes-home,.planner-page{min-width:0;width:100%;max-width:100%}
+.discipline-heading{
+  display:grid!important;
+  grid-template-columns:max-content minmax(0,1fr);
+  align-items:center;
+  column-gap:16px;row-gap:12px;
+  padding:8px 0 25px;
+}
+.discipline-heading .back-link{
+  grid-column:1;grid-row:1;
+  width:max-content;max-width:100%;
+  margin:0!important;
+  min-height:42px;padding:10px 15px;
+  white-space:nowrap;
+}
+.discipline-heading .eyebrow{
+  grid-column:2;grid-row:1;
+  display:block;min-width:0;
+  text-align:right;line-height:1.5;
+  overflow-wrap:anywhere;
+}
+.discipline-heading h1{grid-column:1/-1;grid-row:2;min-width:0;overflow-wrap:anywhere}
+.discipline-heading p{grid-column:1/-1;grid-row:3;line-height:1.65;max-width:760px}
+.grade-summary{min-width:0;align-items:stretch}
+.grade-summary>div{min-width:0;overflow-wrap:anywhere}
+.grade-summary strong,.grade-summary small{overflow-wrap:anywhere}
+.attendance-panel,.grade-panel,.discipline-files,.grade-table-wrap{min-width:0;max-width:100%}
+.attendance-heading>div{min-width:0}
+.attendance-heading .attendance-settings-toggle{flex:none;max-width:100%;white-space:normal}
+@media(min-width:701px){
+  .sidebar{width:260px;padding:24px 16px}
+  .content{margin-left:260px;padding:30px clamp(22px,3.4vw,54px) 54px}
+  .discipline-heading{column-gap:20px}
+  .grade-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+  .sidebar .side-heading{margin-top:22px}
+  .sidebar .subject-form{display:flex}
+  .sidebar .subject-list{min-height:0}
+}
+@media(min-width:701px) and (max-width:920px){
+  .content{padding-inline:22px}
+  .grade-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grade-summary>div:first-child{grid-column:1/-1}
+  .discipline-heading{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:12px}
+  .discipline-heading .back-link{font-size:11px;padding-inline:12px}
+  .discipline-heading .eyebrow{font-size:9px;letter-spacing:1.7px}
+}
+@media(max-width:700px){
+  .content{padding-left:16px!important;padding-right:16px!important;padding-bottom:calc(154px + env(safe-area-inset-bottom))!important}
+  .topbar{min-width:0}
+  .mobile-subjects{max-width:calc(100vw + 0px);margin-left:-16px!important;margin-right:-16px!important;padding-left:16px!important;padding-right:16px!important}
+  .sidebar{
+    height:calc(82px + env(safe-area-inset-bottom))!important;
+    min-height:82px!important;
+    padding:7px 10px calc(7px + env(safe-area-inset-bottom))!important;
+    display:flex!important;flex-direction:row!important;
+    align-items:center!important;justify-content:space-between!important;
+    gap:7px!important;overflow:visible!important;
+    border-radius:20px 20px 0 0!important;
+    z-index:50!important;
+  }
+  .sidebar>.nav,.sidebar>.side-bottom{
+    display:flex!important;flex:1 1 0!important;
+    width:0!important;min-width:0!important;max-width:none!important;
+    height:64px!important;min-height:64px!important;max-height:64px!important;
+    margin:0!important;padding:5px 3px!important;
+    align-items:center!important;justify-content:center!important;
+    flex-direction:column!important;gap:4px!important;
+    border-radius:14px!important;overflow:hidden!important;
+    white-space:normal!important;text-align:center!important;
+    font-size:9px!important;line-height:1.2!important;
+    box-shadow:0 2px 0 #0D2F83!important;
+  }
+  .sidebar>.nav svg,.sidebar>.side-bottom .nav svg{
+    display:block!important;flex:none!important;
+    width:21px!important;height:21px!important;
+  }
+  .sidebar>.nav:not(.active){background:#1746B8!important;color:#fff!important}
+  .sidebar>.nav.active{background:#0D2F83!important;color:#fff!important}
+  .sidebar>.nav span:not(.subject-name){display:none!important}
+  .sidebar>.side-bottom{display:flex!important;max-width:none!important;padding:0!important;border:0!important}
+  .sidebar>.side-bottom .nav{
+    display:flex!important;width:100%!important;height:64px!important;min-height:64px!important;
+    max-height:64px!important;padding:5px 3px!important;margin:0!important;
+    align-items:center!important;justify-content:center!important;flex-direction:column!important;
+    gap:4px!important;font-size:9px!important;line-height:1.2!important;
+    border-radius:14px!important;background:#1746B8!important;color:#fff!important;
+    box-shadow:0 2px 0 #0D2F83!important;
+  }
+  .sidebar .side-heading{
+    display:flex!important;position:absolute!important;
+    left:12px!important;bottom:calc(100% + 10px)!important;
+    z-index:52!important;margin:0!important;padding:5px 8px 5px 12px!important;
+    border:1px solid #B9CBEF!important;border-radius:999px!important;
+    background:rgba(255,255,255,.94)!important;color:#1746B8!important;
+    box-shadow:0 3px 12px rgba(16,43,99,.12)!important;
+    font-size:9px!important;letter-spacing:1px!important;
+  }
+  .sidebar .side-heading button{
+    display:grid!important;visibility:visible!important;opacity:1!important;
+    width:34px!important;height:34px!important;min-width:34px!important;
+    margin-left:7px!important;background:#1746B8!important;color:#fff!important;
+    border:0!important;border-radius:50%!important;box-shadow:0 2px 0 #0D2F83!important;
+  }
+  .sidebar .subject-list{display:none!important}
+  .sidebar .subject-form{
+    display:flex!important;position:absolute!important;
+    left:12px!important;bottom:calc(100% + 55px)!important;
+    z-index:53!important;width:min(330px,calc(100vw - 24px))!important;
+    padding:9px!important;border:1px solid #B9CBEF!important;
+    border-radius:17px!important;background:rgba(255,255,255,.98)!important;
+    box-shadow:0 8px 24px rgba(16,43,99,.18)!important;
+  }
+  .sidebar .subject-form input{min-width:0!important;flex:1!important;height:42px!important}
+  .sidebar .subject-form button{display:grid!important;visibility:visible!important;opacity:1!important;
+    flex:none!important;width:40px!important;height:40px!important;
+    background:#1746B8!important;color:#fff!important;border-radius:50%!important}
+  .discipline-heading{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    column-gap:10px!important;row-gap:13px!important;
+    padding:3px 0 20px!important;
+  }
+  .discipline-heading .back-link{
+    grid-column:1!important;grid-row:1!important;
+    width:max-content!important;max-width:100%!important;
+    min-width:0!important;min-height:40px!important;
+    padding:9px 11px!important;margin:0!important;
+    gap:6px!important;font-size:10px!important;
+    white-space:nowrap!important;
+  }
+  .discipline-heading .back-link svg{width:15px;height:15px;flex:none}
+  .discipline-heading .eyebrow{
+    grid-column:2!important;grid-row:1!important;
+    text-align:right!important;font-size:clamp(7px,2.1vw,9px)!important;
+    letter-spacing:1.2px!important;line-height:1.45!important;
+    overflow-wrap:anywhere!important;
+  }
+  .discipline-heading h1{
+    grid-column:1/-1!important;grid-row:2!important;
+    margin:4px 0 0!important;font-size:clamp(29px,7.8vw,38px)!important;
+    line-height:1.08!important;letter-spacing:-1.7px!important;
+  }
+  .discipline-heading p{
+    grid-column:1/-1!important;grid-row:3!important;
+    margin:0!important;font-size:12px!important;line-height:1.6!important;
+  }
+  .grade-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important;margin-bottom:16px!important}
+  .grade-summary>div{padding:13px 12px!important;border-radius:17px!important;gap:7px!important}
+  .grade-summary>div:first-child{grid-column:1/-1!important}
+  .grade-summary span{font-size:8px!important;letter-spacing:1.5px!important;line-height:1.4!important}
+  .grade-summary strong{font-size:25px!important;line-height:1.05!important}
+  .grade-summary small{font-size:10px!important;line-height:1.45!important}
+  .grade-summary .grade-status{font-size:11px!important;padding:7px 10px!important}
+  .attendance-panel{padding:16px!important;margin-bottom:16px!important}
+  .attendance-heading{align-items:stretch!important}
+  .attendance-heading .attendance-settings-toggle{width:100%!important;justify-content:center!important}
+  .grade-panel{padding:16px!important}
+  .grade-table-wrap{overflow-x:auto!important}
+}
+@media(max-width:380px){
+  .content{padding-left:13px!important;padding-right:13px!important}
+  .mobile-subjects{margin-left:-13px!important;margin-right:-13px!important;padding-left:13px!important;padding-right:13px!important}
+  .discipline-heading{column-gap:7px!important}
+  .discipline-heading .back-link{padding-inline:8px!important;font-size:9px!important}
+  .discipline-heading .eyebrow{letter-spacing:.8px!important;font-size:7px!important}
+  .grade-summary>div{padding:11px 9px!important}
+  .sidebar{gap:5px!important;padding-inline:7px!important}
+  .sidebar>.nav,.sidebar>.side-bottom,.sidebar>.side-bottom .nav{font-size:8px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .sidebar,.sidebar *{scroll-behavior:auto!important;transition:none!important}
+}
