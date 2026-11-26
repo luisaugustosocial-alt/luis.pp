@@ -342,3 +342,201 @@ button:focus-visible,input:focus-visible,select:focus-visible{
   html{scroll-behavior:auto}
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
+
+
+/* LUIS.PP — identidade midnight blue / glass 3D */
+:root{
+  color-scheme:dark;
+  --ui-blue:#68b9ff;
+  --ui-ink:#f1f7ff;
+  --ui-muted:#9aafc7;
+  --ui-line:rgba(142,190,235,.17);
+  --ui-shadow:0 22px 60px rgba(0,0,0,.32);
+  --surface-0:#071321;
+  --surface-1:#0b1c30;
+  --surface-2:#102943;
+  --accent:#4ca8f5;
+  --accent-2:#8bd0ff;
+}
+html,body,#root{min-height:100%;background:#06111f;color:#eaf3ff}
+body{
+  background:
+    radial-gradient(ellipse at 8% 0%,rgba(20,93,155,.25),transparent 34rem),
+    radial-gradient(ellipse at 100% 22%,rgba(25,75,130,.18),transparent 32rem),
+    linear-gradient(145deg,#06111f 0%,#091a2d 52%,#071321 100%);
+  color:#eaf3ff;
+}
+.app{min-height:100vh;background:transparent}
+.sidebar{
+  background:linear-gradient(180deg,rgba(10,27,46,.96),rgba(6,18,32,.98))!important;
+  border-right:1px solid rgba(126,181,229,.15)!important;
+  box-shadow:14px 0 45px rgba(0,0,0,.16);
+  color:#dcecff;
+}
+.sidebar:after{background:radial-gradient(ellipse,rgba(47,143,222,.2),transparent 68%)}
+.side-heading{color:#8da9c5!important;letter-spacing:1.3px}
+.side-heading button,.subject-form button{
+  color:#9bd2ff!important;background:rgba(47,137,207,.15)!important;
+  border:1px solid rgba(116,190,242,.2)!important;border-radius:10px;
+}
+.nav{
+  color:#a9bfd6!important;border-color:transparent!important;
+  background:transparent!important;border-radius:12px;
+}
+.nav svg{color:#80b7e5;flex:none}
+.nav:hover{background:rgba(77,151,213,.13)!important;color:#fff!important;transform:translateX(3px)}
+.nav.active{
+  color:#fff!important;
+  background:linear-gradient(115deg,rgba(34,112,180,.34),rgba(24,69,112,.22))!important;
+  border:1px solid rgba(106,181,239,.28)!important;
+  box-shadow:inset 3px 0 0 #61b9ff,0 8px 24px rgba(0,0,0,.18),inset 0 1px rgba(255,255,255,.06)!important;
+}
+.notes-nav,.notes-nav.active{
+  color:#eaf6ff!important;
+  background:linear-gradient(125deg,rgba(34,112,180,.34),rgba(17,54,91,.48))!important;
+  border-color:rgba(106,181,239,.25)!important;
+}
+.subject-form input,.search input,.semester-picker,.top-semester-picker{
+  background:rgba(13,34,56,.9)!important;color:#e8f4ff!important;
+  border:1px solid rgba(130,180,222,.2)!important;box-shadow:inset 0 1px rgba(255,255,255,.035);
+}
+.subject-form input::placeholder,.search input::placeholder{color:#7893ad}
+.subject-list .nav span:last-child{color:#87a9c8}
+.side-bottom{border-top:1px solid rgba(135,180,220,.13)}
+.content{color:#e8f2ff}
+.content h1,.notes-home-heading h1,.discipline-heading h1{color:#f2f8ff!important}
+.content h2,.section-title h2,.discipline-files h2{color:#e4f1ff!important}
+.content p,.notes-home-heading p,.discipline-heading p{color:#9bb1c9}
+.eyebrow{color:#77bdf2!important;letter-spacing:1.5px}
+.page-brand b{color:#f3f8ff}
+.page-brand b span{color:#73c1ff}
+.page-brand small{color:#7e9bb8}
+.brand-mark{
+  color:#dff2ff!important;
+  background:linear-gradient(145deg,#1e6ca8,#103858)!important;
+  border:1px solid rgba(148,211,255,.28);
+  box-shadow:inset 0 1px rgba(255,255,255,.22),0 9px 24px rgba(0,0,0,.3),0 0 28px rgba(46,144,216,.18)!important;
+}
+.topbar{border-bottom:1px solid rgba(129,179,220,.12)}
+.semester-picker,.top-semester-picker{
+  color:#a9c4df!important;border-radius:13px!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.05),0 9px 25px rgba(0,0,0,.18)!important;
+}
+.semester-picker select,.top-semester-picker select{color:#eaf4ff!important;background:transparent!important}
+.semester-picker option,.top-semester-picker option{background:#102943;color:#fff}
+.welcome,.notes-intro,.notes-subject-card,.grade-panel,.grade-summary>div,.file-card{
+  color:#eaf4ff!important;
+  background:linear-gradient(145deg,rgba(20,49,77,.94),rgba(10,29,49,.96))!important;
+  border:1px solid rgba(130,186,232,.19)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.075),0 18px 38px rgba(0,0,0,.23),0 2px 8px rgba(0,0,0,.14)!important;
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
+.welcome{position:relative;overflow:hidden}
+.welcome:after{
+  content:"";position:absolute;inset:auto -10% -75% 35%;height:230px;pointer-events:none;
+  background:radial-gradient(ellipse,rgba(45,143,220,.22),transparent 68%);
+}
+.welcome-art,.notes-intro-icon,.notes-card-icon{
+  background:linear-gradient(145deg,#1d659b,#0d2d4b)!important;color:#bfe6ff!important;
+  border:1px solid rgba(146,209,255,.22);
+  box-shadow:inset 0 1px rgba(255,255,255,.18),0 12px 24px rgba(0,0,0,.25)!important;
+}
+.notes-intro b,.notes-card-copy b{color:#edf7ff!important}
+.notes-intro span,.notes-card-copy small{color:#93abc4!important}
+.notes-card-copy em{color:#79c7ff!important}
+.notes-subject-card{min-height:100px!important;transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}
+.notes-subject-card:hover,.file-card:hover{
+  transform:translateY(-4px) perspective(800px) rotateX(1deg);
+  border-color:rgba(111,192,250,.42)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.1),0 25px 48px rgba(0,0,0,.32),0 0 26px rgba(39,130,199,.1)!important;
+}
+.notes-card-arrow{color:#83caff!important}
+.notes-back-library,.secondary,.icon-btn{
+  color:#c4def5!important;background:rgba(20,48,74,.72)!important;
+  border:1px solid rgba(130,185,231,.2)!important;
+}
+.notes-back-library:hover,.secondary:hover,.icon-btn:hover{
+  background:rgba(35,87,130,.5)!important;color:#fff!important;border-color:rgba(119,194,248,.42)!important;
+}
+.primary,.upload-btn{
+  color:#fff!important;background:linear-gradient(135deg,#237fc2,#15548c)!important;
+  border:1px solid rgba(157,216,255,.25)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.2),0 10px 25px rgba(0,0,0,.25),0 0 22px rgba(38,129,197,.16)!important;
+}
+.primary:hover,.upload-btn:hover{filter:brightness(1.12);transform:translateY(-2px)}
+.search{
+  background:rgba(12,31,51,.92)!important;border:1px solid rgba(132,183,225,.2)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.04),0 10px 24px rgba(0,0,0,.16)!important;
+}
+.search input{color:#edf7ff!important}
+.file-card h3,.file-card strong{color:#edf6ff!important}
+.file-meta,.file-card small,.file-card p{color:#91a9c2!important}
+.file-icon{background:linear-gradient(145deg,#1b5b8b,#102d49)!important;color:#a9dcff!important}
+.file-actions{border-top-color:rgba(140,186,225,.12)!important}
+.empty,.grade-empty{color:#91a9c2!important}
+.empty b,.grade-empty b{color:#e5f2ff!important}
+.grade-summary>div strong,.grade-final-cell{color:#8dccff!important}
+.grade-summary>div small,.grade-panel p{color:#96aec7!important}
+.grade-panel-title h2{color:#eff7ff!important}
+.grade-table-wrap{background:rgba(7,22,38,.65)!important;border-color:rgba(137,188,229,.2)!important}
+.grade-table th{background:#153653!important;color:#9fc7e8!important}
+.grade-table td{color:#c3d8eb!important;border-top-color:rgba(139,184,222,.12)!important}
+.grade-activity-name{color:#eff7ff!important}
+.grade-table tbody tr:hover{background:rgba(57,127,184,.13)!important}
+.grade-table tfoot td{background:#12314d!important;color:#dff1ff!important}
+.grade-input,.activity-form input,.activity-form select,.subject-form input,.semester-form input{
+  color:#edf7ff!important;background:#091d31!important;border:1px solid rgba(135,185,225,.24)!important;
+}
+.grade-input:focus,.activity-form input:focus,.activity-form select:focus{border-color:#67b9f4!important}
+.activity-type{background:rgba(48,125,181,.2)!important;color:#9bd4ff!important}
+.grade-rule{background:rgba(34,99,149,.2)!important;color:#b2cce4!important;border:1px solid rgba(126,184,228,.14)}
+.login{
+  background:radial-gradient(ellipse at 50% 10%,rgba(31,107,169,.26),transparent 45%),linear-gradient(145deg,#06111f,#0b2036 55%,#061321)!important;
+}
+.login-card{
+  color:#eaf4ff!important;
+  background:linear-gradient(145deg,rgba(18,47,75,.96),rgba(8,25,43,.98))!important;
+  border:1px solid rgba(133,193,239,.23)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.1),0 30px 80px rgba(0,0,0,.42),0 0 50px rgba(34,118,184,.13)!important;
+  backdrop-filter:blur(22px);
+}
+.login-card h1{color:#f4f9ff!important}
+.login-card p,.login-card small{color:#9cb4cc!important}
+.login-card label{color:#c3d9ed!important}
+.login input{
+  color:#f2f8ff!important;background:#071a2c!important;border:1px solid rgba(133,190,233,.25)!important;
+}
+.login input::placeholder{color:#718da8}
+.login input:focus{border-color:#68bdf8!important;box-shadow:0 0 0 4px rgba(73,157,218,.15)!important}
+.error{color:#ff9eaa!important}
+.success{color:#8ce0b7!important}
+.notice{background:#103553!important;color:#d9efff!important;border:1px solid rgba(120,190,239,.2)}
+footer{color:#7894ad!important}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid rgba(104,189,248,.55)!important}
+@media(max-width:620px){
+  body{background:linear-gradient(180deg,#071625,#06111f 60%)}
+  .sidebar{
+    background:rgba(7,22,38,.96)!important;border-bottom:1px solid rgba(126,181,229,.18)!important;
+    box-shadow:0 12px 30px rgba(0,0,0,.28)!important;
+  }
+  .sidebar>.nav{flex:1 1 calc(50% - 4px)!important;width:auto!important;min-width:0;justify-content:center;text-align:center}
+  .sidebar>.nav span{font-size:10px}
+  .side-heading{flex:0 0 auto!important}
+  .subject-list{padding:5px 0 7px!important}
+  .subject-list .nav{background:rgba(18,47,74,.75)!important;border:1px solid rgba(130,184,226,.15)!important}
+  .subject-list .nav.active{background:linear-gradient(120deg,#1b639b,#103553)!important}
+  .content{padding-top:14px!important}
+  .topbar{padding-bottom:12px}
+  .welcome,.notes-intro,.notes-subject-card,.grade-panel,.file-card{border-radius:17px!important}
+  .file-card{min-height:180px}
+  .notes-subject-card{min-height:82px!important}
+}
+@media(prefers-reduced-motion:no-preference){
+  .welcome,.notes-intro,.grade-panel{transform-style:preserve-3d}
+  .welcome{animation:midnight-rise .7s cubic-bezier(.2,.8,.2,1) both}
+  .grade-summary>div{animation:midnight-rise .55s ease both}
+  .grade-summary>div:nth-child(2){animation-delay:60ms}
+  .grade-summary>div:nth-child(3){animation-delay:120ms}
+  @keyframes midnight-rise{from{opacity:0;transform:translateY(15px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+}
