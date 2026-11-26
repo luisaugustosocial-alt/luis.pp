@@ -773,3 +773,16 @@ body,.app,.content{overscroll-behavior-y:contain}
  .noticeboard-card h3{font-size:15px}
  .subject-planner-panel{margin:18px 0;padding:15px}
 }
+
+/* Ações de edição dos registros acadêmicos */
+.grade-row-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px}
+.planner-edit-button{width:34px;height:34px;flex:none;display:grid;place-items:center;border:1px solid #d6e1f4;border-radius:10px;background:#fff;color:#1746B8}
+.planner-edit-button:hover{background:#eaf0fb}
+.noticeboard-card-top>div{align-items:center}
+.planner-detail-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+@media(max-width:700px){
+ .grade-row-actions{gap:3px}
+ .planner-edit-button{width:32px;height:32px}
+ .planner-detail-actions{justify-content:stretch}
+ .planner-detail-actions>*{flex:1}
+}
