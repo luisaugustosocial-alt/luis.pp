@@ -701,3 +701,36 @@ body,.app,.content{overscroll-behavior-y:contain}
  .content{padding-bottom:calc(112px + env(safe-area-inset-bottom))!important}
 }
 @media(min-width:701px){.planner-date-cell{min-height:88px}.planner-detail-modal{padding:30px}}
+
+/* Espaçamento consistente entre blocos, mensagens e formulários. */
+.notice{margin:20px 0 22px;padding:14px 16px;line-height:1.55;gap:14px}
+.planner-heading{margin-bottom:26px}
+.planner-overview{margin-bottom:22px;gap:16px}
+.planner-layout{gap:20px}
+.planner-layout .panel{padding:22px}
+.planner-form{gap:15px}
+.planner-list-heading{margin:32px 0 16px}
+.planner-list{gap:13px}
+.planner-item{padding:16px;gap:14px}
+.attendance-panel,.grade-panel{margin-bottom:22px}
+.grade-summary{margin-bottom:24px}
+.activity-form{gap:14px;padding:20px;margin:24px 0}
+.discipline-files{margin:28px 0 18px}
+.file-grid{gap:20px}
+@media(max-width:700px){
+ .notice{margin:16px 0 20px;padding:12px 13px}
+ .planner-heading{margin-bottom:19px}
+ .planner-overview{gap:8px;margin-bottom:15px}
+ .planner-layout{gap:15px}
+ .planner-layout .panel{padding:16px}
+ .planner-form{gap:12px}
+ .planner-list-heading{margin:25px 0 14px}
+ .planner-list{gap:11px}
+ .planner-item{padding:12px;gap:9px}
+ .attendance-panel,.grade-panel{margin-bottom:17px}
+ .grade-summary{margin-bottom:18px}
+ .activity-form{gap:12px;padding:14px;margin:18px 0}
+ .discipline-files{margin:22px 0 15px}
+ .file-grid{gap:14px}
+ .planner-modal-backdrop{padding:12px}
+}
