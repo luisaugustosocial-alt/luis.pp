@@ -43,6 +43,14 @@ function App() {
   const [gradeLoading, setGradeLoading] = useState(false);
   const [activityName, setActivityName] = useState("");
   const [activityType, setActivityType] = useState("Prova");
+  const [plannerItems,setPlannerItems]=useState([]);
+  const [plannerTitle,setPlannerTitle]=useState("");
+  const [plannerCategory,setPlannerCategory]=useState("Prova");
+  const [plannerDate,setPlannerDate]=useState(()=>new Date().toISOString().slice(0,10));
+  const [plannerTime,setPlannerTime]=useState("");
+  const [plannerSubject,setPlannerSubject]=useState("");
+  const [plannerDescription,setPlannerDescription]=useState("");
+  const [plannerLoading,setPlannerLoading]=useState(false);
 
   // Mantém a página, o semestre e a busca na URL para continuar de onde parou após atualizar.
   useEffect(() => {
