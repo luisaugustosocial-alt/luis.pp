@@ -328,3 +328,55 @@ body{
  .login-card{padding:32px 20px}
 }
 @media(max-width:360px){.attendance-stats>div{padding:9px 6px}.attendance-stats span{font-size:5.5px}.attendance-settings-grid{grid-template-columns:1fr}}
+
+
+/* Refinamento responsivo e animações de rolagem — desktop e mobile. */
+:where(.subject-list,.mobile-subjects,.notes-subject-grid,.file-grid,.file-actions,.file-tools,.activity-form,.planner-form,.attendance-entry,.attendance-schedule-form){min-width:0}
+.subject-list{gap:9px}
+.subject-list .nav{gap:10px;min-width:0;padding:11px 12px;align-items:center}
+.subject-list .nav .subject-name{flex:1;min-width:0;white-space:normal;overflow-wrap:anywhere;word-break:normal;line-height:1.3}
+.subject-list .nav>span:last-child{flex:none}
+.mobile-subjects{gap:10px;scroll-padding-inline:16px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.mobile-subject-chip{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:max-content;max-width:min(78vw,260px);min-height:42px;padding:9px 15px;white-space:normal;overflow-wrap:anywhere;word-break:normal;line-height:1.25;text-align:center;scroll-snap-align:start;transition:background .22s ease,border-color .22s ease,box-shadow .22s ease,transform .22s ease}
+.notes-subject-card{min-width:0;gap:12px}
+.notes-card-copy{flex:1;min-width:0}
+.notes-card-copy b,.file-card h3,.filename,.planner-item-copy h3,.planner-item-copy p{overflow-wrap:anywhere;word-break:normal}
+.file-actions{display:flex;align-items:center;gap:10px}
+.file-tools{display:flex;align-items:center;gap:8px}
+.activity-form,.planner-form,.attendance-entry,.attendance-schedule-form{gap:14px}
+.primary,.secondary,.upload-btn,.attendance-settings-toggle,.planner-month-actions button,.planner-check,.planner-delete,.icon-btn,.grade-remove{transition:transform .2s ease,box-shadow .2s ease,background-color .2s ease,border-color .2s ease}
+button:focus-visible,.upload-btn:focus-within{outline:3px solid rgba(91,43,255,.3);outline-offset:3px}
+.scroll-reveal{opacity:0;transform:translate3d(0,22px,0) scale(.99);transition:opacity .65s cubic-bezier(.2,.7,.2,1),transform .65s cubic-bezier(.2,.7,.2,1);will-change:opacity,transform}
+.scroll-reveal.is-visible{opacity:1;transform:translate3d(0,0,0) scale(1);will-change:auto}
+.notes-subject-card:nth-child(2n),.file-card:nth-child(2n){transition-delay:70ms}
+.notes-subject-card:nth-child(3n),.file-card:nth-child(3n){transition-delay:120ms}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){
+ .notes-subject-card:hover,.file-card:hover,.planner-item:hover{transform:translateY(-3px)}
+ .primary:hover,.secondary:hover,.upload-btn:hover,.attendance-settings-toggle:hover{transform:translateY(-2px)}
+ .mobile-subject-chip:hover{transform:translateY(-1px)}
+}
+@media(max-width:700px){
+ .subject-list .nav{padding:10px;gap:8px}
+ .mobile-subject-chip{max-width:min(76vw,235px);min-height:42px;padding:9px 13px;font-size:11px}
+ .notes-subject-card{gap:9px;padding:13px;align-items:center}
+ .notes-card-copy b{font-size:clamp(11px,3.1vw,14px);line-height:1.3}
+ .notes-card-copy em{line-height:1.35}
+ .file-actions{gap:9px}
+ .file-actions .secondary{min-height:42px}
+ .file-tools{gap:9px}
+ .activity-form,.planner-form,.attendance-entry,.attendance-schedule-form{gap:11px}
+ .planner-item{gap:10px}
+ .planner-item-copy{overflow-wrap:anywhere}
+ .attendance-record{column-gap:10px;row-gap:8px}
+ .content button,.content .upload-btn{touch-action:manipulation}
+}
+@media(max-width:380px){
+ .mobile-subject-chip{max-width:72vw;padding-inline:11px;font-size:10px}
+ .notes-subject-card{padding:11px;gap:8px}
+ .notes-card-copy b{font-size:11px}
+ .file-actions{gap:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ .scroll-reveal{opacity:1!important;transform:none!important;transition:none!important}
+ .primary,.secondary,.upload-btn,.attendance-settings-toggle,.planner-month-actions button,.planner-check,.planner-delete,.icon-btn,.grade-remove,.mobile-subject-chip{transition:none!important}
+}
