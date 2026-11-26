@@ -53,6 +53,8 @@ function App() {
   const [attendanceEnd,setAttendanceEnd]=useState("20:40");
   const [attendanceUnits,setAttendanceUnits]=useState("1");
   const [attendanceMax,setAttendanceMax]=useState("16");
+  const [attendanceRecordUnits,setAttendanceRecordUnits]=useState("1");
+  const [attendanceSettingsOpen,setAttendanceSettingsOpen]=useState(false);
   const [activityName, setActivityName] = useState("");
   const [activityType, setActivityType] = useState("Prova");
   const [plannerItems,setPlannerItems]=useState([]);
@@ -305,7 +307,7 @@ function App() {
   const removeAttendanceSchedule = async (day) => persistAttendanceData({ ...attendanceData, config: { ...attendanceConfig, schedule: attendanceConfig.schedule.filter(x => Number(x.day) !== Number(day)) } });
   const addAttendanceRecord = async (e) => {
     e.preventDefault();
-    const units = Math.max(1, Math.min(attendanceConfig.unitsPerDay, Number(attendanceUnits) || 1));
+    const units = Math.max(1, Math.min(attendanceConfig.unitsPerDay, Number(attendanceRecordUnits) || 1));
     const record = { date: attendanceDate, status: attendanceStatus, units, note: attendanceNote.trim() };
     const records = [...attendanceData.records.filter(r => r.date !== attendanceDate), record].sort((a,b) => a.date.localeCompare(b.date));
     await persistAttendanceData({ ...attendanceData, records });
@@ -415,13 +417,13 @@ function App() {
       <div className="discipline-heading"><button className="back-link" onClick={() => setActive("Todas")}><FolderOpen size={16}/> Voltar à biblioteca</button><span className="eyebrow">DISCIPLINA · {activeSemester}</span><h1>{active}</h1><p>Organize suas avaliações e acompanhe seu desempenho nesta matéria.</p></div>
       {(error||notice)&&<div className={error?"notice":"notice success-notice"}><span>{error||notice}</span><button onClick={()=>{setError("");setNotice("");}}><X size={16}/></button></div>}<div className="grade-summary"><div><span>NOTA FINAL</span><strong>{gradeCount ? gradeFinal.toFixed(2).replace(".", ",") : "—"}</strong><small>Soma das notas ÷ 2</small></div><div><span>SITUAÇÃO</span><strong className={hasGrades ? passed ? "grade-status approved" : "grade-status failed" : "grade-status pending"}>{hasGrades ? passed ? "Aprovado" : "Reprovado" : "Aguardando"}</strong><small>{hasGrades ? passed ? "Você atingiu a média 5,0." : "Faltam " + (passingGrade-gradeFinal).toFixed(2).replace(".", ",") + " pontos para a média." : "Insira suas notas para calcular."}</small></div><div><span>AVALIAÇÕES LANÇADAS</span><strong>{gradeCount}<small> / {gradeData.columns.length}</small></strong><small>Notas preenchidas</small></div></div>
       <section className="attendance-panel glass-surface">
-        <div className="attendance-heading"><div><span className="eyebrow">CONTROLE DE FREQUÊNCIA</span><h2>Presenças e faltas</h2><p>Configure os dias de aula e quantas aulas contam por dia. O sistema soma as faltas automaticamente.</p></div><button type="button" className="attendance-settings-toggle" onClick={()=>setNotice(notice==="settings-open"?"":"settings-open")}><Pencil size={15}/> Configurar matéria</button></div>
+        <div className="attendance-heading"><div><span className="eyebrow">CONTROLE DE FREQUÊNCIA</span><h2>Presenças e faltas</h2><p>Configure os dias de aula e quantas aulas contam por dia. O sistema soma as faltas automaticamente.</p></div><button type="button" className="attendance-settings-toggle" onClick={()=>setAttendanceSettingsOpen(v=>!v)}><Pencil size={15}/> Configurar matéria</button></div>
         <div className="attendance-stats">
           <div><span>FALTAS ACUMULADAS</span><strong>{absenceCount}</strong><small>de {attendanceConfig.maxAbsences} permitidas</small></div>
           <div><span>FALTAS RESTANTES</span><strong>{attendanceRemaining}</strong><small>Antes da reprovação</small></div>
           <div><span>SITUAÇÃO</span><strong className={attendanceFailed?"attendance-failed":"attendance-ok"}>{attendanceFailed?"Reprovado":"Dentro do limite"}</strong><small>{attendanceFailed?"Limite de faltas atingido":"Você pode ter mais "+attendanceRemaining+" falta(s)"}</small></div>
         </div>
-        {notice==="settings-open"&&<div className="attendance-settings">
+        {attendanceSettingsOpen&&<div className="attendance-settings">
           <div className="attendance-settings-title"><b>Configurações de {active}</b><span>Essas regras valem somente para esta matéria e semestre.</span></div>
           <div className="attendance-settings-grid">
             <label>Quantidade de aulas por dia<input type="number" min="1" max="12" value={attendanceUnits} onChange={e=>setAttendanceUnits(e.target.value)}/></label>
@@ -434,7 +436,7 @@ function App() {
         <form className="attendance-entry" onSubmit={addAttendanceRecord}>
           <label>Data da aula<input type="date" value={attendanceDate} onChange={e=>setAttendanceDate(e.target.value)} required/></label>
           <label>Registro<select value={attendanceStatus} onChange={e=>setAttendanceStatus(e.target.value)}><option>Presente</option><option>Falta</option></select></label>
-          <label>Quantidade de aulas<input type="number" min="1" max={attendanceConfig.unitsPerDay} value={attendanceUnits} onChange={e=>setAttendanceUnits(e.target.value)}/></label>
+          <label>Quantidade de aulas<input type="number" min="1" max={attendanceConfig.unitsPerDay} value={attendanceRecordUnits} onChange={e=>setAttendanceRecordUnits(e.target.value)}/></label>
           <label className="attendance-note">Observação (opcional)<input value={attendanceNote} onChange={e=>setAttendanceNote(e.target.value)} placeholder="Ex.: atestado, reposição..."/></label>
           <button className="primary" type="submit" disabled={attendanceSaving}><Check size={15}/> Registrar</button>
         </form>
