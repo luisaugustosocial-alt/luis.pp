@@ -40,6 +40,7 @@ alter table public.documents add column if not exists semester text not null def
 
 alter table public.subjects add column if not exists user_id uuid references auth.users(id) on delete cascade;
 alter table public.subjects add column if not exists semester text not null default '2026.1';
+alter table public.subjects add column if not exists grade_data jsonb not null default '{"columns":[]}'::jsonb;
 alter table public.documents add column if not exists user_id uuid references auth.users(id) on delete cascade;
 alter table public.subjects drop constraint if exists subjects_name_key;
 drop index if exists public.subjects_user_name_unique;
