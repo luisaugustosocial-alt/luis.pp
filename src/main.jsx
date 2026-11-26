@@ -247,6 +247,7 @@ function App() {
     return [...Array(offset).fill(null), ...Array.from({ length: count }, (_, i) => i + 1)];
   })();
   const plannerDayKey = day => day ? [plannerMonth.getFullYear(), String(plannerMonth.getMonth()+1).padStart(2,"0"), String(day).padStart(2,"0")].join("-") : "";
+  const formatPlannerDate = value => value ? new Date(value+"T12:00:00").toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long",year:"numeric"}) : "";
   const plannerDayItems = plannerItems.filter(item => item.due_date === plannerSelectedDay);
   const plannerMonthLabel = plannerMonth.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
 
