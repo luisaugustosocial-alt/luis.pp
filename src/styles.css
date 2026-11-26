@@ -786,3 +786,28 @@ body,.app,.content{overscroll-behavior-y:contain}
  .planner-detail-actions{justify-content:stretch}
  .planner-detail-actions>*{flex:1}
 }
+
+/* Modal de edição completa dos registros */
+.edit-modal-backdrop{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(7,20,49,.58);backdrop-filter:blur(8px);overflow-y:auto}
+.edit-modal{width:min(680px,100%);max-height:min(90dvh,900px);overflow:auto;background:#f8faff;border:1px solid rgba(255,255,255,.8);border-radius:24px;padding:25px;box-shadow:0 24px 80px rgba(4,20,56,.28);color:#102b63}
+.edit-modal-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:22px}
+.edit-modal-heading h2{margin:6px 0;color:#102b63;font-size:clamp(20px,3vw,27px);line-height:1.2}
+.edit-modal-heading p{margin:7px 0 0;color:#647795;font-size:13px}
+.edit-modal-heading>button{flex:none;width:38px;height:38px;border:0;border-radius:12px;background:#eaf0fb;color:#1746B8;display:grid;place-items:center}
+.edit-record-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.edit-record-form label{display:flex;flex-direction:column;gap:7px;min-width:0;color:#29436f;font-size:12px;font-weight:750}
+.edit-record-form input:not([type=checkbox]),.edit-record-form select,.edit-record-form textarea{width:100%;min-width:0;border:1px solid #d4deef;border-radius:12px;background:white;color:#102b63;padding:12px;font:inherit;font-weight:500;outline:none}
+.edit-record-form input:focus,.edit-record-form select:focus,.edit-record-form textarea:focus{border-color:#1746B8;box-shadow:0 0 0 3px rgba(23,70,184,.12)}
+.edit-record-form textarea{resize:vertical;line-height:1.6}
+.edit-record-form .edit-wide{grid-column:1/-1}
+.edit-record-form .edit-check{flex-direction:row;align-items:center;gap:9px}
+.edit-record-form .edit-check input{width:17px;height:17px;accent-color:#1746B8}
+.edit-modal-actions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:10px;padding-top:8px}
+@media(max-width:600px){
+ .edit-modal-backdrop{align-items:flex-end;padding:8px}
+ .edit-modal{width:100%;max-height:92dvh;border-radius:22px 22px 14px 14px;padding:18px 15px calc(18px + env(safe-area-inset-bottom))}
+ .edit-record-form{grid-template-columns:1fr;gap:12px}
+ .edit-record-form .edit-wide{grid-column:auto}
+ .edit-modal-actions{position:sticky;bottom:-18px;background:#f8faff;padding:13px 0 2px;display:grid;grid-template-columns:1fr 1.5fr}
+ .edit-modal-actions button{min-height:46px}
+}
