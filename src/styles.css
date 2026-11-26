@@ -657,3 +657,47 @@ html,body,#root{width:100%;max-width:100%;overflow-x:clip}
 @media(prefers-reduced-motion:reduce){
   .sidebar,.sidebar *{scroll-behavior:auto!important;transition:none!important}
 }
+
+/* Calendário clicável, modal de detalhes, respiro e rolagem leve. */
+.planner-calendar-grid{align-items:stretch}
+.planner-date-cell{display:flex;flex-direction:column;align-items:stretch;gap:3px;min-width:0;min-height:82px;padding:4px;border-radius:12px;background:rgba(232,239,251,.62);border:1px solid rgba(185,203,239,.7)}
+.planner-date-cell.selected{background:rgba(23,70,184,.08);border-color:#1746B8}
+.planner-day-number{align-self:flex-start;width:25px;height:25px;border:0;border-radius:8px;background:transparent;color:#102B63;font-size:11px;font-weight:850}
+.planner-date-cell.selected .planner-day-number{background:#1746B8;color:#fff}
+.planner-calendar-event{display:block;width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;border:0;border-radius:6px;padding:4px 5px;background:#1746B8;color:#fff;font-size:8px;font-weight:750;line-height:1.25;box-shadow:none!important}
+.planner-calendar-event.completed{opacity:.58;text-decoration:line-through}
+.planner-more-events{font-size:8px;font-weight:800;color:#1746B8;text-align:left;padding-left:3px}
+.planner-modal-backdrop{position:fixed;inset:0;z-index:120;display:grid;place-items:center;padding:20px;background:rgba(7,20,52,.48);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+.planner-detail-modal{width:min(100%,520px);max-height:min(86dvh,720px);overflow:auto;padding:25px;border:1px solid rgba(255,255,255,.75);border-radius:26px;background:rgba(248,251,255,.97);box-shadow:0 24px 70px rgba(8,30,78,.28);color:#102B63}
+.planner-detail-head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:18px}
+.planner-detail-close{display:grid;place-items:center;width:38px;height:38px;flex:none;border:0;border-radius:50%;background:#1746B8;color:#fff}
+.planner-detail-modal h2{margin:10px 0 18px;font-size:clamp(23px,5vw,30px);line-height:1.15;overflow-wrap:anywhere}
+.planner-detail-meta{display:grid;gap:11px;padding:16px;border-radius:16px;background:#E8EFFB}
+.planner-detail-meta span{display:flex;align-items:flex-start;gap:10px;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.planner-detail-meta svg{flex:none;color:#1746B8}
+.planner-detail-description{margin:18px 0;padding:16px;border:1px solid #D7E2F5;border-radius:16px;background:#fff}
+.planner-detail-description b{font-size:12px}
+.planner-detail-description p{margin:8px 0 0;font-size:12px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;color:#42577D}
+.planner-detail-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:20px}
+.planner-detail-actions .primary,.planner-detail-actions .secondary{min-height:42px}
+.side-heading>span{min-width:0}
+html{scroll-behavior:auto}
+body,.app,.content{overscroll-behavior-y:contain}
+.sidebar,.subject-list,.mobile-subjects,.grade-table-wrap{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.scroll-reveal,.scroll-reveal.is-visible{opacity:1!important;transform:none!important;transition:none!important;will-change:auto!important}
+.file-card,.grade-panel,.grade-summary>div,.planner-layout .panel,.notes-intro,.notes-subject-card{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+@media(max-width:700px){
+ .planner-calendar-grid{gap:4px}
+ .planner-date-cell{min-height:70px;padding:3px;border-radius:9px;gap:2px}
+ .planner-day-number{width:22px;height:22px;font-size:10px}
+ .planner-calendar-event{font-size:7px;padding:3px 4px}
+ .planner-detail-modal{padding:19px;border-radius:22px}
+ .planner-detail-actions{display:grid;grid-template-columns:1fr}
+ .planner-detail-actions button{width:100%}
+ .sidebar .side-heading{position:fixed!important;left:14px!important;bottom:calc(94px + env(safe-area-inset-bottom))!important;z-index:80!important;width:48px!important;height:48px!important;margin:0!important;padding:0!important;border:0!important;border-radius:50%!important;background:transparent!important;box-shadow:none!important;letter-spacing:0!important}
+ .sidebar .side-heading>span{display:none!important}
+ .sidebar .side-heading button{width:48px!important;height:48px!important;min-width:48px!important;margin:0!important;border:2px solid rgba(255,255,255,.85)!important;border-radius:50%!important;background:#1746B8!important;color:#fff!important;box-shadow:0 5px 0 #0D2F83!important}
+ .sidebar .subject-form{position:fixed!important;left:14px!important;bottom:calc(151px + env(safe-area-inset-bottom))!important;z-index:81!important;width:min(330px,calc(100vw - 28px))!important}
+ .content{padding-bottom:calc(112px + env(safe-area-inset-bottom))!important}
+}
+@media(min-width:701px){.planner-date-cell{min-height:88px}.planner-detail-modal{padding:30px}}
