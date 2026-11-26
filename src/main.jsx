@@ -321,7 +321,7 @@ function App() {
     e.preventDefault();
     if(!noticeTitle.trim()||!supabase)return;
     setNoticeLoading(true);setError("");setNotice("");
-    const {data,error}=await supabase.from("academic_notices").insert({user_id:WORKSPACE_OWNER_ID,semester:activeSemester,title:noticeTitle.trim(),body:noticeBody.trim(),kind:noticeKind,subject:noticeSubject||null,due_date:noticeDate||null}).select("id,title,body,kind,subject,due_date,pinned,created_at,updated_at").single();
+    const {data,error}=await supabase.from("academic_notices").insert({user_id:WORKSPACE_OWNER_ID,semester:activeSemester,title:noticeTitle.trim(),body:noticeBody.trim(),kind:noticeKind,subject:noticeSubject||null,due_date:noticeDate||null,notification_config:noticeNotify}).select("id,title,body,kind,subject,due_date,pinned,created_at,updated_at,notification_config").single();
     setNoticeLoading(false);
     if(error){setError("Não consegui salvar no mural: "+error.message);return;}
     setNoticeItems(prev=>[data,...prev]);setNoticeTitle("");setNoticeBody("");setNoticeKind("Anotação");setNoticeSubject("");setNoticeDate("");setNoticeNotify({enabled:false,mode:"once",offset_minutes:1440,days:[],times:["08:00"]});setNotice("Anotação adicionada ao mural.");
