@@ -48,6 +48,11 @@ function App() {
   const [attendanceStatus,setAttendanceStatus]=useState("Presente");
   const [attendanceNote,setAttendanceNote]=useState("");
   const [attendanceSaving,setAttendanceSaving]=useState(false);
+  const [attendanceDay,setAttendanceDay]=useState("1");
+  const [attendanceStart,setAttendanceStart]=useState("19:00");
+  const [attendanceEnd,setAttendanceEnd]=useState("20:40");
+  const [attendanceUnits,setAttendanceUnits]=useState("1");
+  const [attendanceMax,setAttendanceMax]=useState("16");
   const [activityName, setActivityName] = useState("");
   const [activityType, setActivityType] = useState("Prova");
   const [plannerItems,setPlannerItems]=useState([]);
@@ -272,6 +277,41 @@ function App() {
     })();
     return () => { cancelled = true; };
   }, [active, activeSemester, workspaceReady]);
+
+  const attendanceConfig = {
+    schedule: Array.isArray(attendanceData.config?.schedule) ? attendanceData.config.schedule : [],
+    unitsPerDay: Math.max(1, Number(attendanceData.config?.unitsPerDay) || 1),
+    maxAbsences: Math.max(1, Number(attendanceData.config?.maxAbsences) || 16)
+  };
+  const absenceCount = attendanceData.records.filter(r => r.status === "Falta").reduce((sum, r) => sum + Math.max(1, Number(r.units) || 1), 0);
+  const attendanceRemaining = Math.max(0, attendanceConfig.maxAbsences - absenceCount);
+  const attendanceFailed = absenceCount >= attendanceConfig.maxAbsences;
+  const persistAttendanceData = async (next) => {
+    setAttendanceSaving(true);
+    const { error } = await supabase.from("subjects").upsert({ name: active, semester: activeSemester, user_id: WORKSPACE_OWNER_ID, attendance_data: next }, { onConflict: "user_id,semester,name" });
+    setAttendanceSaving(false);
+    if (error) setError("Não consegui salvar as frequências: " + error.message);
+    else { setAttendanceData(next); setNotice("Frequência salva automaticamente."); }
+  };
+  const saveAttendanceSettings = async () => {
+    const config = { ...attendanceConfig, unitsPerDay: Math.max(1, Number(attendanceUnits) || 1), maxAbsences: Math.max(1, Number(attendanceMax) || 16) };
+    await persistAttendanceData({ ...attendanceData, config });
+  };
+  const addAttendanceSchedule = async () => {
+    const day = Number(attendanceDay);
+    const schedule = [...attendanceConfig.schedule.filter(x => Number(x.day) !== day), { day, start: attendanceStart, end: attendanceEnd }].sort((a,b) => a.day-b.day);
+    await persistAttendanceData({ ...attendanceData, config: { ...attendanceConfig, schedule } });
+  };
+  const removeAttendanceSchedule = async (day) => persistAttendanceData({ ...attendanceData, config: { ...attendanceConfig, schedule: attendanceConfig.schedule.filter(x => Number(x.day) !== Number(day)) } });
+  const addAttendanceRecord = async (e) => {
+    e.preventDefault();
+    const units = Math.max(1, Math.min(attendanceConfig.unitsPerDay, Number(attendanceUnits) || 1));
+    const record = { date: attendanceDate, status: attendanceStatus, units, note: attendanceNote.trim() };
+    const records = [...attendanceData.records.filter(r => r.date !== attendanceDate), record].sort((a,b) => a.date.localeCompare(b.date));
+    await persistAttendanceData({ ...attendanceData, records });
+    setAttendanceNote("");
+  };
+  const removeAttendanceRecord = async (date) => persistAttendanceData({ ...attendanceData, records: attendanceData.records.filter(r => r.date !== date) });
   const persistGradeData = async (next) => {
     setGradeData(next);
     const { error } = await supabase.from("subjects").upsert({ name: active, semester: activeSemester, user_id: WORKSPACE_OWNER_ID, grade_data: next }, { onConflict: "user_id,semester,name" });
@@ -374,6 +414,34 @@ function App() {
 </section> : active === "Notas" ? <section className="notes-home"><div className="notes-home-heading"><span className="eyebrow">ACOMPANHAMENTO ACADÊMICO · {activeSemester}</span><h1>Notas e médias</h1><p>Escolha uma disciplina para consultar avaliações, lançar notas e acompanhar sua média.</p></div><div className="notes-intro"><div className="notes-intro-icon"><GraduationCap size={25}/></div><div><b>Seu desempenho, em um só lugar</b><span>A média mínima para aprovação é 5,0. As notas são salvas automaticamente.</span></div></div><div className="notes-subject-grid">{subjects.map((subject,index)=><button type="button" className="notes-subject-card" key={subject} onClick={()=>setActive(subject)}><span className="notes-card-icon"><BookOpen size={19}/></span><span className="notes-card-copy"><small>DISCIPLINA {String(index+1).padStart(2,"0")}</small><b>{subject}</b><em>Abrir boletim e lançar notas</em></span><span className="notes-card-arrow"><ChevronRight size={18}/></span></button>)}</div>{subjects.length===0&&<div className="empty"><h3>Nenhuma matéria cadastrada</h3><p>Adicione uma matéria para começar a acompanhar suas notas.</p></div>}<button className="notes-back-library" onClick={()=>setActive("Todas")}><FolderOpen size={16}/> Voltar à biblioteca de arquivos</button></section> : active !== "Todas" ? <section className="discipline-page">
       <div className="discipline-heading"><button className="back-link" onClick={() => setActive("Todas")}><FolderOpen size={16}/> Voltar à biblioteca</button><span className="eyebrow">DISCIPLINA · {activeSemester}</span><h1>{active}</h1><p>Organize suas avaliações e acompanhe seu desempenho nesta matéria.</p></div>
       {(error||notice)&&<div className={error?"notice":"notice success-notice"}><span>{error||notice}</span><button onClick={()=>{setError("");setNotice("");}}><X size={16}/></button></div>}<div className="grade-summary"><div><span>NOTA FINAL</span><strong>{gradeCount ? gradeFinal.toFixed(2).replace(".", ",") : "—"}</strong><small>Soma das notas ÷ 2</small></div><div><span>SITUAÇÃO</span><strong className={hasGrades ? passed ? "grade-status approved" : "grade-status failed" : "grade-status pending"}>{hasGrades ? passed ? "Aprovado" : "Reprovado" : "Aguardando"}</strong><small>{hasGrades ? passed ? "Você atingiu a média 5,0." : "Faltam " + (passingGrade-gradeFinal).toFixed(2).replace(".", ",") + " pontos para a média." : "Insira suas notas para calcular."}</small></div><div><span>AVALIAÇÕES LANÇADAS</span><strong>{gradeCount}<small> / {gradeData.columns.length}</small></strong><small>Notas preenchidas</small></div></div>
+      <section className="attendance-panel glass-surface">
+        <div className="attendance-heading"><div><span className="eyebrow">CONTROLE DE FREQUÊNCIA</span><h2>Presenças e faltas</h2><p>Configure os dias de aula e quantas aulas contam por dia. O sistema soma as faltas automaticamente.</p></div><button type="button" className="attendance-settings-toggle" onClick={()=>setNotice(notice==="settings-open"?"":"settings-open")}><Pencil size={15}/> Configurar matéria</button></div>
+        <div className="attendance-stats">
+          <div><span>FALTAS ACUMULADAS</span><strong>{absenceCount}</strong><small>de {attendanceConfig.maxAbsences} permitidas</small></div>
+          <div><span>FALTAS RESTANTES</span><strong>{attendanceRemaining}</strong><small>Antes da reprovação</small></div>
+          <div><span>SITUAÇÃO</span><strong className={attendanceFailed?"attendance-failed":"attendance-ok"}>{attendanceFailed?"Reprovado":"Dentro do limite"}</strong><small>{attendanceFailed?"Limite de faltas atingido":"Você pode ter mais "+attendanceRemaining+" falta(s)"}</small></div>
+        </div>
+        {notice==="settings-open"&&<div className="attendance-settings">
+          <div className="attendance-settings-title"><b>Configurações de {active}</b><span>Essas regras valem somente para esta matéria e semestre.</span></div>
+          <div className="attendance-settings-grid">
+            <label>Quantidade de aulas por dia<input type="number" min="1" max="12" value={attendanceUnits} onChange={e=>setAttendanceUnits(e.target.value)}/></label>
+            <label>Limite de faltas para reprovação<input type="number" min="1" max="100" value={attendanceMax} onChange={e=>setAttendanceMax(e.target.value)}/></label>
+          </div>
+          <div className="attendance-schedule-form"><label>Dia da semana<select value={attendanceDay} onChange={e=>setAttendanceDay(e.target.value)}>{["Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado"].map((d,i)=><option value={i} key={i}>{d}</option>)}</select></label><label>Início<input type="time" value={attendanceStart} onChange={e=>setAttendanceStart(e.target.value)}/></label><label>Término<input type="time" value={attendanceEnd} onChange={e=>setAttendanceEnd(e.target.value)}/></label><button type="button" className="secondary" onClick={addAttendanceSchedule}><Plus size={15}/> Adicionar dia</button></div>
+          <div className="attendance-schedule-list">{attendanceConfig.schedule.length?attendanceConfig.schedule.map(item=><span key={item.day}>{["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"][item.day]} · {item.start}–{item.end}<button type="button" onClick={()=>removeAttendanceSchedule(item.day)} aria-label="Remover dia"><X size={13}/></button></span>):<small>Nenhum dia de aula configurado ainda.</small>}</div>
+          <button type="button" className="primary" onClick={saveAttendanceSettings} disabled={attendanceSaving}>{attendanceSaving?"Salvando…":"Salvar configurações"}</button>
+        </div>}
+        <form className="attendance-entry" onSubmit={addAttendanceRecord}>
+          <label>Data da aula<input type="date" value={attendanceDate} onChange={e=>setAttendanceDate(e.target.value)} required/></label>
+          <label>Registro<select value={attendanceStatus} onChange={e=>setAttendanceStatus(e.target.value)}><option>Presente</option><option>Falta</option></select></label>
+          <label>Quantidade de aulas<input type="number" min="1" max={attendanceConfig.unitsPerDay} value={attendanceUnits} onChange={e=>setAttendanceUnits(e.target.value)}/></label>
+          <label className="attendance-note">Observação (opcional)<input value={attendanceNote} onChange={e=>setAttendanceNote(e.target.value)} placeholder="Ex.: atestado, reposição..."/></label>
+          <button className="primary" type="submit" disabled={attendanceSaving}><Check size={15}/> Registrar</button>
+        </form>
+        <div className="attendance-records"><div className="attendance-records-title"><b>Histórico de frequência</b><span>{attendanceData.records.length} registro(s)</span></div>
+          {attendanceData.records.length===0?<p className="attendance-empty">Nenhuma presença ou falta registrada nesta matéria.</p>:attendanceData.records.slice().reverse().map(record=><div className="attendance-record" key={record.date}><span className={record.status==="Falta"?"attendance-dot absent":"attendance-dot present"}></span><b>{new Date(record.date+"T12:00:00").toLocaleDateString("pt-BR",{day:"2-digit",month:"short",year:"numeric"})}</b><span>{record.status} · {record.units} aula(s)</span>{record.note&&<small>{record.note}</small>}<button type="button" onClick={()=>removeAttendanceRecord(record.date)} aria-label="Excluir registro"><Trash2 size={14}/></button></div>)}
+        </div>
+      </section>
       <section className="grade-panel"><div className="grade-panel-title"><div><span className="eyebrow">ACOMPANHAMENTO ACADÊMICO</span><h2>Boletim de avaliações</h2><p>Adicione provas, trabalhos e outras atividades. O cálculo é atualizado automaticamente.</p></div><span className="grade-semester">{activeSemester}</span></div>
       <form className="activity-form" onSubmit={addActivity}><label>Nome da avaliação<input value={activityName} onChange={e=>setActivityName(e.target.value)} placeholder="Ex.: Prova 1, Trabalho em grupo..." required/></label><label>Tipo de atividade<select value={activityType} onChange={e=>setActivityType(e.target.value)}><option>Prova</option><option>Trabalho</option><option>Seminário</option><option>Atividade</option><option>Participação</option><option>Projeto</option><option>Outra</option></select></label><button className="primary" type="submit"><Plus size={16}/> Adicionar coluna</button></form>
       {gradeLoading ? <div className="grade-empty">Carregando suas notas…</div> : gradeData.columns.length === 0 ? <div className="grade-empty"><div className="empty-icon"><Layers3 size={25}/></div><b>Sua tabela ainda está vazia</b><p>Adicione a primeira avaliação para começar a acompanhar sua nota.</p></div> : <div className="grade-table-wrap"><table className="grade-table"><thead><tr><th>AVALIAÇÃO</th><th>TIPO</th><th>NOTA</th><th></th></tr></thead><tbody>{gradeData.columns.map(c=><tr key={c.id}><td className="grade-activity-name">{c.name}</td><td><span className="activity-type">{c.type}</span></td><td><input className="grade-input" type="number" min="0" step="0.01" placeholder="—" value={c.score} onChange={e=>setGradeData(prev=>({...prev,columns:prev.columns.map(item=>item.id===c.id?{...item,score:e.target.value}:item)}))} onBlur={e=>changeActivityScore(c.id,e.target.value)}/></td><td><button className="grade-remove" type="button" title="Excluir avaliação" onClick={()=>removeActivity(c.id)}><Trash2 size={15}/></button></td></tr>)}</tbody><tfoot><tr><td colSpan="2">NOTA FINAL · SOMA ÷ 2</td><td className="grade-final-cell">{gradeFinal.toFixed(2).replace(".", ",")}</td><td></td></tr></tfoot></table></div>}
