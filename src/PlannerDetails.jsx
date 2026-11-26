@@ -1,7 +1,7 @@
 import React from "react";
-import { CalendarDays, Clock3, BookOpen, CheckCircle2, X } from "lucide-react";
+import { CalendarDays, Clock3, BookOpen, CheckCircle2, X, Pencil } from "lucide-react";
 
-export default function PlannerDetails({ item, onClose, onToggle }) {
+export default function PlannerDetails({ item, onClose, onToggle, onEdit }) {
   if (!item) return null;
   const date = new Date(item.due_date + "T12:00:00").toLocaleDateString("pt-BR", {
     weekday: "long", day: "numeric", month: "long", year: "numeric"
@@ -23,7 +23,7 @@ export default function PlannerDetails({ item, onClose, onToggle }) {
         </div>
         <div className="planner-detail-description"><b>Descrição</b><p>{item.description?.trim() || "Nenhuma descrição foi adicionada."}</p></div>
         <div className="planner-detail-actions">
-          <button type="button" className="secondary" onClick={onClose}>Fechar</button>
+          <button type="button" className="secondary" onClick={onEdit}><Pencil size={15}/> Editar</button><button type="button" className="secondary" onClick={onClose}>Fechar</button>
           <button type="button" className="primary" onClick={onToggle}>{item.completed ? "Reabrir atividade" : "Marcar como concluída"}</button>
         </div>
       </section>
