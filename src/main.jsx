@@ -277,6 +277,7 @@ function App() {
       const nextAttendance = data?.attendance_data && Array.isArray(data.attendance_data.records) ? data.attendance_data : {records:[]};
       setAttendanceData(nextAttendance);
       setAttendanceUnits(String(nextAttendance.config?.unitsPerDay || 1));
+      setAttendanceRecordUnits(String(nextAttendance.config?.unitsPerDay || 1));
       setAttendanceMax(String(nextAttendance.config?.maxAbsences || 16));
       setGradeLoading(false);
     })();
@@ -301,6 +302,7 @@ function App() {
   const saveAttendanceSettings = async () => {
     const config = { ...attendanceConfig, unitsPerDay: Math.max(1, Number(attendanceUnits) || 1), maxAbsences: Math.max(1, Number(attendanceMax) || 16) };
     await persistAttendanceData({ ...attendanceData, config });
+    setAttendanceRecordUnits(String(config.unitsPerDay));
   };
   const addAttendanceSchedule = async () => {
     const day = Number(attendanceDay);
