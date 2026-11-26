@@ -339,7 +339,7 @@ function App() {
 
   const emptyGradeData = { columns: [] };
   useEffect(() => {
-    if (active === "Todas" || active === "Notas" || active === "Planejamento" || !workspaceReady || !supabase) { setGradeData(emptyGradeData); setAttendanceData({records:[]}); return; }
+    if (active === "Todas" || active === "Notas" || active === "Planejamento" || active === "Mural" || !workspaceReady || !supabase) { setGradeData(emptyGradeData); setAttendanceData({records:[]}); return; }
     let cancelled = false; setGradeLoading(true);
     (async () => {
       const { data, error } = await supabase.from("subjects").select("grade_data,attendance_data").eq("name", active).eq("semester", activeSemester).eq("user_id", WORKSPACE_OWNER_ID).maybeSingle();
