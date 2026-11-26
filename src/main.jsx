@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { createClient } from "@supabase/supabase-js";
-import { BookOpen, Search, Plus, Upload, FileText, Presentation, Image as ImageIcon, Download, Trash2, LogOut, LockKeyhole, FolderOpen, Clock3, X, ExternalLink, Layers3, CalendarDays, Check, Pencil, GraduationCap, ChevronRight, CalendarCheck, ListTodo, Circle, CheckCircle2 } from "lucide-react";
+import { BookOpen, Search, Plus, Upload, FileText, Presentation, Image as ImageIcon, Download, Trash2, LogOut, LockKeyhole, FolderOpen, Clock3, X, ExternalLink, Layers3, CalendarDays, Check, Pencil, GraduationCap, ChevronRight, ChevronLeft, CalendarCheck, ListTodo, Circle, CheckCircle2 } from "lucide-react";
 import "./styles.css";
 
 const url = import.meta.env.VITE_SUPABASE_URL;
@@ -51,6 +51,8 @@ function App() {
   const [plannerSubject,setPlannerSubject]=useState("");
   const [plannerDescription,setPlannerDescription]=useState("");
   const [plannerLoading,setPlannerLoading]=useState(false);
+  const [plannerMonth,setPlannerMonth]=useState(()=>new Date(new Date().getFullYear(),new Date().getMonth(),1));
+  const [plannerSelectedDay,setPlannerSelectedDay]=useState(()=>new Date().toISOString().slice(0,10));
 
   // Mantém a página, o semestre e a busca na URL para continuar de onde parou após atualizar.
   useEffect(() => {
@@ -145,6 +147,72 @@ function App() {
       supabase.removeChannel(channel);
     };
   }, [session?.user?.id, workspaceReady, activeSemester]);
+
+
+  // Planejamento geral: os dados ficam no Supabase e aparecem em qualquer dispositivo.
+  useEffect(() => {
+    if (!workspaceReady || !supabase) { setPlannerItems([]); return; }
+    let cancelled = false;
+    const loadPlanner = async () => {
+      setPlannerLoading(true);
+      const { data, error } = await supabase
+        .from("academic_planner")
+        .select("id,title,category,due_date,due_time,subject,description,completed,created_at")
+        .eq("user_id", WORKSPACE_OWNER_ID)
+        .order("due_date", { ascending: true })
+        .order("due_time", { ascending: true });
+      if (cancelled) return;
+      if (error) setError("Não foi possível carregar o planejamento: " + error.message);
+      else setPlannerItems(data || []);
+      setPlannerLoading(false);
+    };
+    loadPlanner();
+    const channel = supabase.channel("luispp-planner-" + session?.user?.id)
+      .on("postgres_changes", { event: "*", schema: "public", table: "academic_planner", filter: "user_id=eq." + WORKSPACE_OWNER_ID }, loadPlanner)
+      .subscribe();
+    return () => { cancelled = true; supabase.removeChannel(channel); };
+  }, [workspaceReady, session?.user?.id]);
+
+  const addPlannerItem = async (e) => {
+    e.preventDefault();
+    if (!plannerTitle.trim() || !plannerDate || !supabase) return;
+    setPlannerLoading(true); setError(""); setNotice("");
+    const { data, error } = await supabase.from("academic_planner").insert({
+      user_id: WORKSPACE_OWNER_ID, title: plannerTitle.trim(), category: plannerCategory,
+      due_date: plannerDate, due_time: plannerTime || null, subject: plannerSubject || null,
+      description: plannerDescription.trim()
+    }).select("id,title,category,due_date,due_time,subject,description,completed,created_at").single();
+    setPlannerLoading(false);
+    if (error) { setError("Não consegui salvar a atividade: " + error.message); return; }
+    setPlannerItems(prev => [...prev, data].sort((a,b) => (a.due_date + (a.due_time || "")).localeCompare(b.due_date + (b.due_time || ""))));
+    setPlannerSelectedDay(plannerDate);
+    setPlannerMonth(new Date(plannerDate + "T12:00:00").toDateString().slice(0,0) ? plannerMonth : new Date(new Date(plannerDate + "T12:00:00").getFullYear(),new Date(plannerDate + "T12:00:00").getMonth(),1));
+    setPlannerTitle(""); setPlannerTime(""); setPlannerDescription(""); setPlannerSubject("");
+    setNotice("Atividade salva no planejamento geral.");
+  };
+
+  const togglePlannerItem = async (item) => {
+    const { error } = await supabase.from("academic_planner").update({ completed: !item.completed }).eq("id", item.id).eq("user_id", WORKSPACE_OWNER_ID);
+    if (error) { setError("Não consegui atualizar a atividade: " + error.message); return; }
+    setPlannerItems(prev => prev.map(x => x.id === item.id ? { ...x, completed: !x.completed } : x));
+  };
+
+  const deletePlannerItem = async (item) => {
+    if (!window.confirm("Excluir esta atividade do planejamento?")) return;
+    const { error } = await supabase.from("academic_planner").delete().eq("id", item.id).eq("user_id", WORKSPACE_OWNER_ID);
+    if (error) { setError("Não consegui excluir a atividade: " + error.message); return; }
+    setPlannerItems(prev => prev.filter(x => x.id !== item.id));
+  };
+
+  const plannerMonthDays = (() => {
+    const first = new Date(plannerMonth.getFullYear(), plannerMonth.getMonth(), 1);
+    const offset = (first.getDay() + 6) % 7;
+    const count = new Date(plannerMonth.getFullYear(), plannerMonth.getMonth() + 1, 0).getDate();
+    return [...Array(offset).fill(null), ...Array.from({ length: count }, (_, i) => i + 1)];
+  })();
+  const plannerDayKey = day => day ? new Date(plannerMonth.getFullYear(), plannerMonth.getMonth(), day).toLocaleDateString("en-CA") : "";
+  const plannerDayItems = plannerItems.filter(item => item.due_date === plannerSelectedDay);
+  const plannerMonthLabel = plannerMonth.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
 
   const login = async (e) => {
     e.preventDefault(); setError(""); setNotice("");
@@ -285,7 +353,17 @@ function App() {
   if (!authReady) return <main className="login"><div className="login-card"><div className="brand-mark"><BookOpen size={26}/></div><h1>Luis<span>.pp</span></h1><p>Conectando ao seu espaço acadêmico…</p></div></main>;
   if (!session) return <main className="login"><div className="login-card"><div className="brand-mark"><BookOpen size={26}/></div><span className="eyebrow">SEU ESPAÇO ACADÊMICO</span><h1>Luis<span>.pp</span></h1><p>Seus trabalhos, suas ideias e suas matérias em um só lugar.</p><form onSubmit={login}><label htmlFor="password">Senha de acesso</label><input id="password" type="password" inputMode="numeric" autoComplete="current-password" maxLength={4} required placeholder="Digite sua senha" value={password} onChange={e=>setPassword(e.target.value)}/><button className="primary full" type="submit" disabled={busy}><LockKeyhole size={17}/>{busy ? "Abrindo seu espaço…" : "Entrar no Luis.pp"}</button>{error&&<p className="error">{error}</p>}{notice&&<p className="success">{notice}</p>}</form><small>Seu espaço acadêmico, organizado em um só lugar.</small></div></main>;
 
-  return <div className="app"><aside className="sidebar"><button className={active==="Todas"?"nav active":"nav"} onClick={()=>setActive("Todas")}><FolderOpen size={18}/> Biblioteca de arquivos <span>{docs.filter(d=>d.semester===activeSemester).length}</span></button><button className={active==="Notas"?"nav active notes-nav":"nav notes-nav"} onClick={()=>setActive("Notas")}><GraduationCap size={18}/> Notas e médias <ChevronRight size={15}/></button><div className="side-heading">MINHAS MATÉRIAS <button onClick={()=>setAdding(!adding)} title="Adicionar matéria"><Plus size={16}/></button></div>{adding&&<form className="subject-form" onSubmit={addSubject}><input autoFocus value={newSubject} onChange={e=>setNewSubject(e.target.value)} placeholder="Nome da matéria"/><button aria-label="Salvar matéria"><Plus size={15}/></button></form>}<div className="subject-list">{subjects.map(s=><button key={s} className={active===s?"nav active":"nav"} onClick={()=>setActive(s)}><BookOpen size={16}/><span className="subject-name">{s}</span><span>{docs.filter(d=>d.semester===activeSemester && d.subject===s).length}</span></button>)}</div><div className="side-bottom"><button className="nav logout" onClick={async()=>{await supabase.auth.signOut();setActive("Todas");}}><LogOut size={17}/> Sair</button></div></aside><main className="content"><div className="topbar"><div className="page-brand"><div className="brand-mark"><BookOpen size={23}/></div><div><b>Luis<span>.pp</span></b><small>ESPAÇO ACADÊMICO</small></div></div><div className="semester-picker top-semester-picker"><CalendarDays size={17}/><select aria-label="Selecionar semestre" value={activeSemester} onChange={e=>{setActiveSemester(e.target.value);setActive("Todas");setQuery("");}}>{semesters.map(s=><option key={s} value={s}>{s}</option>)}</select><button title="Adicionar semestre" onClick={()=>setAddingSemester(!addingSemester)}><Plus size={16}/></button></div></div><nav className="mobile-subjects" aria-label="Atalhos de matérias"><button className={active==="Todas"?"mobile-subject-chip selected":"mobile-subject-chip"} onClick={()=>setActive("Todas")}>Biblioteca</button>{subjects.map(subject=><button key={subject} className={active===subject?"mobile-subject-chip selected":"mobile-subject-chip"} onClick={()=>setActive(subject)}>{subject}</button>)}</nav>{active === "Notas" ? <section className="notes-home"><div className="notes-home-heading"><span className="eyebrow">ACOMPANHAMENTO ACADÊMICO · {activeSemester}</span><h1>Notas e médias</h1><p>Escolha uma disciplina para consultar avaliações, lançar notas e acompanhar sua média.</p></div><div className="notes-intro"><div className="notes-intro-icon"><GraduationCap size={25}/></div><div><b>Seu desempenho, em um só lugar</b><span>A média mínima para aprovação é 5,0. As notas são salvas automaticamente.</span></div></div><div className="notes-subject-grid">{subjects.map((subject,index)=><button type="button" className="notes-subject-card" key={subject} onClick={()=>setActive(subject)}><span className="notes-card-icon"><BookOpen size={19}/></span><span className="notes-card-copy"><small>DISCIPLINA {String(index+1).padStart(2,"0")}</small><b>{subject}</b><em>Abrir boletim e lançar notas</em></span><span className="notes-card-arrow"><ChevronRight size={18}/></span></button>)}</div>{subjects.length===0&&<div className="empty"><h3>Nenhuma matéria cadastrada</h3><p>Adicione uma matéria para começar a acompanhar suas notas.</p></div>}<button className="notes-back-library" onClick={()=>setActive("Todas")}><FolderOpen size={16}/> Voltar à biblioteca de arquivos</button></section> : active !== "Todas" ? <section className="discipline-page">
+  return <div className="app"><aside className="sidebar"><button className={active==="Todas"?"nav active":"nav"} onClick={()=>setActive("Todas")}><FolderOpen size={18}/> Biblioteca de arquivos <span>{docs.filter(d=>d.semester===activeSemester).length}</span></button><button className={active==="Notas"?"nav active notes-nav":"nav notes-nav"} onClick={()=>setActive("Notas")}><GraduationCap size={18}/> Notas e médias <ChevronRight size={15}/></button><button className={active==="Planejamento"?"nav active planner-nav":"nav planner-nav"} onClick={()=>setActive("Planejamento")}><CalendarCheck size={18}/> Planejamento geral <ChevronRight size={15}/></button><div className="side-heading">MINHAS MATÉRIAS <button onClick={()=>setAdding(!adding)} title="Adicionar matéria"><Plus size={16}/></button></div>{adding&&<form className="subject-form" onSubmit={addSubject}><input autoFocus value={newSubject} onChange={e=>setNewSubject(e.target.value)} placeholder="Nome da matéria"/><button aria-label="Salvar matéria"><Plus size={15}/></button></form>}<div className="subject-list">{subjects.map(s=><button key={s} className={active===s?"nav active":"nav"} onClick={()=>setActive(s)}><BookOpen size={16}/><span className="subject-name">{s}</span><span>{docs.filter(d=>d.semester===activeSemester && d.subject===s).length}</span></button>)}</div><div className="side-bottom"><button className="nav logout" onClick={async()=>{await supabase.auth.signOut();setActive("Todas");}}><LogOut size={17}/> Sair</button></div></aside><main className="content"><div className="topbar"><div className="page-brand"><div className="brand-mark"><BookOpen size={23}/></div><div><b>Luis<span>.pp</span></b><small>ESPAÇO ACADÊMICO</small></div></div><div className="semester-picker top-semester-picker"><CalendarDays size={17}/><select aria-label="Selecionar semestre" value={activeSemester} onChange={e=>{setActiveSemester(e.target.value);setActive("Todas");setQuery("");}}>{semesters.map(s=><option key={s} value={s}>{s}</option>)}</select><button title="Adicionar semestre" onClick={()=>setAddingSemester(!addingSemester)}><Plus size={16}/></button></div></div><nav className="mobile-subjects" aria-label="Atalhos de matérias"><button className={active==="Todas"?"mobile-subject-chip selected":"mobile-subject-chip"} onClick={()=>setActive("Todas")}>Biblioteca</button>{subjects.map(subject=><button key={subject} className={active===subject?"mobile-subject-chip selected":"mobile-subject-chip"} onClick={()=>setActive(subject)}>{subject}</button>)}</nav>{active === "Planejamento" ? <section className="planner-page">
+  <div className="planner-heading"><span className="eyebrow">ORGANIZAÇÃO ACADÊMICA · {activeSemester}</span><h1>Planejamento geral</h1><p>Calendário, provas, trabalhos, tarefas, prazos e horários de estudo em um só lugar — sem ficar preso a uma matéria.</p></div>
+  {(error||notice)&&<div className={error?"notice":"notice success-notice"}><span>{error||notice}</span><button onClick={()=>{setError("");setNotice("");}}><X size={16}/></button></div>}
+  <div className="planner-overview"><div><CalendarCheck/><b>{plannerItems.length}</b><span>NO CALENDÁRIO</span></div><div><CheckCircle2/><b>{plannerItems.filter(x=>x.completed).length}</b><span>CONCLUÍDAS</span></div><div><Clock3/><b>{plannerItems.filter(x=>!x.completed).length}</b><span>PENDENTES</span></div></div>
+  <div className="planner-layout">
+    <section className="planner-calendar panel"><div className="planner-calendar-head"><div><span className="eyebrow">CALENDÁRIO ACADÊMICO</span><h2>{plannerMonthLabel}</h2></div><div className="planner-month-actions"><button type="button" aria-label="Mês anterior" onClick={()=>setPlannerMonth(new Date(plannerMonth.getFullYear(),plannerMonth.getMonth()-1,1))}><ChevronLeft/></button><button type="button" aria-label="Próximo mês" onClick={()=>setPlannerMonth(new Date(plannerMonth.getFullYear(),plannerMonth.getMonth()+1,1))}><ChevronRight/></button></div></div><div className="planner-weekdays">{["SEG","TER","QUA","QUI","SEX","SÁB","DOM"].map(d=><span key={d}>{d}</span>)}</div><div className="planner-calendar-grid">{plannerMonthDays.map((day,index)=>{const key=plannerDayKey(day);const has=plannerItems.some(item=>item.due_date===key);return <button type="button" key={day?"d"+day:"blank"+index} disabled={!day} className={(day&&plannerSelectedDay===key?"selected ":"")+(day&&has?"has-items":"")} onClick={()=>setPlannerSelectedDay(key)}>{day||""}{has&&<i/>}</button>})}</div><button className="planner-today" type="button" onClick={()=>{const now=new Date();setPlannerMonth(new Date(now.getFullYear(),now.getMonth(),1));setPlannerSelectedDay(now.toLocaleDateString("en-CA"));}}>Ir para hoje</button></section>
+    <section className="planner-panel panel"><div className="planner-panel-title"><div><span className="eyebrow">NOVA ATIVIDADE</span><h2>Adicionar ao planejamento</h2><p>Escolha uma matéria se fizer sentido. Ela é opcional.</p></div><ListTodo size={25}/></div><form className="planner-form" onSubmit={addPlannerItem}><label className="planner-wide">Atividade<input value={plannerTitle} onChange={e=>setPlannerTitle(e.target.value)} placeholder="Ex.: Prova de sociologia, entregar trabalho..." required/></label><label>Tipo<select value={plannerCategory} onChange={e=>setPlannerCategory(e.target.value)}><option>Prova</option><option>Trabalho</option><option>Tarefa</option><option>Estudo</option><option>Prazo de entrega</option><option>Evento acadêmico</option><option>Leitura</option><option>Apresentação</option><option>Outro</option></select></label><label>Data<input type="date" value={plannerDate} onChange={e=>setPlannerDate(e.target.value)} required/></label><label>Horário<input type="time" value={plannerTime} onChange={e=>setPlannerTime(e.target.value)}/></label><label>Matéria (opcional)<select value={plannerSubject} onChange={e=>setPlannerSubject(e.target.value)}><option value="">Geral — sem matéria específica</option>{subjects.map(subject=><option key={subject} value={subject}>{subject}</option>)}</select></label><label className="planner-wide">Detalhes<textarea value={plannerDescription} onChange={e=>setPlannerDescription(e.target.value)} placeholder="Conteúdo para estudar, instruções ou observações..."/></label><button className="primary planner-wide" type="submit" disabled={plannerLoading}><Plus size={16}/>{plannerLoading?"Salvando…":"Adicionar ao calendário"}</button></form></section>
+  </div>
+  <div className="planner-list-heading"><div><span className="eyebrow">AGENDA DO DIA</span><h2>{new Date(plannerSelectedDay+"T12:00:00").toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"})}</h2></div><button type="button" onClick={()=>setPlannerSelectedDay("")}>Ver todas</button></div>
+  {plannerLoading&&!plannerItems.length?<div className="empty"><p>Carregando seu planejamento…</p></div>:<div className="planner-list">{(plannerSelectedDay?plannerDayItems:plannerItems).length===0?<div className="empty planner-empty"><div className="empty-icon"><CalendarCheck size={27}/></div><h3>Nenhuma atividade nesta data</h3><p>Cadastre uma prova, trabalho, prazo ou horário de estudo. Seus compromissos aparecerão aqui e no calendário.</p></div>:(plannerSelectedDay?plannerDayItems:plannerItems).map(item=><article className={item.completed?"planner-item completed":"planner-item"} key={item.id}><button className="planner-check" type="button" onClick={()=>togglePlannerItem(item)} aria-label="Marcar como concluída">{item.completed?<CheckCircle2/>:<Circle/>}</button><div className="planner-date"><b>{new Date(item.due_date+"T12:00:00").getDate()}</b><span>{new Date(item.due_date+"T12:00:00").toLocaleDateString("pt-BR",{month:"short"})}</span></div><div className="planner-item-copy"><span className="planner-category">{item.category}</span><h3>{item.title}</h3>{item.description&&<p>{item.description}</p>}<small>{item.subject||"Planejamento geral"}{item.due_time?" · "+item.due_time.slice(0,5):""}</small></div><button className="planner-delete" type="button" onClick={()=>deletePlannerItem(item)} aria-label="Excluir atividade"><Trash2 size={16}/></button></article>)}</div>}
+</section> : {active === "Notas" ? <section className="notes-home"><div className="notes-home-heading"><span className="eyebrow">ACOMPANHAMENTO ACADÊMICO · {activeSemester}</span><h1>Notas e médias</h1><p>Escolha uma disciplina para consultar avaliações, lançar notas e acompanhar sua média.</p></div><div className="notes-intro"><div className="notes-intro-icon"><GraduationCap size={25}/></div><div><b>Seu desempenho, em um só lugar</b><span>A média mínima para aprovação é 5,0. As notas são salvas automaticamente.</span></div></div><div className="notes-subject-grid">{subjects.map((subject,index)=><button type="button" className="notes-subject-card" key={subject} onClick={()=>setActive(subject)}><span className="notes-card-icon"><BookOpen size={19}/></span><span className="notes-card-copy"><small>DISCIPLINA {String(index+1).padStart(2,"0")}</small><b>{subject}</b><em>Abrir boletim e lançar notas</em></span><span className="notes-card-arrow"><ChevronRight size={18}/></span></button>)}</div>{subjects.length===0&&<div className="empty"><h3>Nenhuma matéria cadastrada</h3><p>Adicione uma matéria para começar a acompanhar suas notas.</p></div>}<button className="notes-back-library" onClick={()=>setActive("Todas")}><FolderOpen size={16}/> Voltar à biblioteca de arquivos</button></section> : active !== "Todas" ? <section className="discipline-page">
       <div className="discipline-heading"><button className="back-link" onClick={() => setActive("Todas")}><FolderOpen size={16}/> Voltar à biblioteca</button><span className="eyebrow">DISCIPLINA · {activeSemester}</span><h1>{active}</h1><p>Organize suas avaliações e acompanhe seu desempenho nesta matéria.</p></div>
       {(error||notice)&&<div className={error?"notice":"notice success-notice"}><span>{error||notice}</span><button onClick={()=>{setError("");setNotice("");}}><X size={16}/></button></div>}<div className="grade-summary"><div><span>NOTA FINAL</span><strong>{gradeCount ? gradeFinal.toFixed(2).replace(".", ",") : "—"}</strong><small>Soma das notas ÷ 2</small></div><div><span>SITUAÇÃO</span><strong className={hasGrades ? passed ? "grade-status approved" : "grade-status failed" : "grade-status pending"}>{hasGrades ? passed ? "Aprovado" : "Reprovado" : "Aguardando"}</strong><small>{hasGrades ? passed ? "Você atingiu a média 5,0." : "Faltam " + (passingGrade-gradeFinal).toFixed(2).replace(".", ",") + " pontos para a média." : "Insira suas notas para calcular."}</small></div><div><span>AVALIAÇÕES LANÇADAS</span><strong>{gradeCount}<small> / {gradeData.columns.length}</small></strong><small>Notas preenchidas</small></div></div>
       <section className="grade-panel"><div className="grade-panel-title"><div><span className="eyebrow">ACOMPANHAMENTO ACADÊMICO</span><h2>Boletim de avaliações</h2><p>Adicione provas, trabalhos e outras atividades. O cálculo é atualizado automaticamente.</p></div><span className="grade-semester">{activeSemester}</span></div>
