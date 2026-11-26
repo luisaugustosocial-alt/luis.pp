@@ -8,8 +8,8 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#eaf5ff",
-  "theme_color": "#1d5fa7",
+  "background_color": "#140B45",
+  "theme_color": "#5B2BFF",
   "icons": [
     {
       "src": "/icons/luispp-icon.svg",
