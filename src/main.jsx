@@ -109,6 +109,24 @@ function App() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  // Anima os elementos conforme entram na área visível durante a rolagem.
+  useEffect(() => {
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) return;
+    const selector = ".content > header, .toolbar, .section-title, .file-card, .discipline-heading, .grade-summary, .attendance-panel, .grade-panel, .discipline-files, .notes-home-heading, .notes-intro, .notes-subject-card, .planner-heading, .planner-overview > div, .planner-layout > .panel, .planner-list-heading, .planner-item";
+    const elements = document.querySelectorAll(selector);
+    elements.forEach((element) => element.classList.add("scroll-reveal"));
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: "0px 0px -42px 0px" });
+    elements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [active, activeSemester, docs.length, subjects.length, plannerItems.length, gradeData.columns.length, attendanceData.records.length]);
+
   // Registra o dispositivo no espaço compartilhado após validar o PIN.
   useEffect(() => {
     if (!session?.user?.id || !supabase) { setWorkspaceReady(false); return; }
