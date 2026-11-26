@@ -43,6 +43,11 @@ function App() {
   const [notice, setNotice] = useState("");
   const [gradeData, setGradeData] = useState({ columns: [] });
   const [gradeLoading, setGradeLoading] = useState(false);
+  const [attendanceData,setAttendanceData]=useState({records:[]});
+  const [attendanceDate,setAttendanceDate]=useState(()=>localDateKey());
+  const [attendanceStatus,setAttendanceStatus]=useState("Presente");
+  const [attendanceNote,setAttendanceNote]=useState("");
+  const [attendanceSaving,setAttendanceSaving]=useState(false);
   const [activityName, setActivityName] = useState("");
   const [activityType, setActivityType] = useState("Prova");
   const [plannerItems,setPlannerItems]=useState([]);
@@ -255,13 +260,14 @@ function App() {
 
   const emptyGradeData = { columns: [] };
   useEffect(() => {
-    if (active === "Todas" || !workspaceReady || !supabase) { setGradeData(emptyGradeData); return; }
+    if (active === "Todas" || active === "Notas" || active === "Planejamento" || !workspaceReady || !supabase) { setGradeData(emptyGradeData); setAttendanceData({records:[]}); return; }
     let cancelled = false; setGradeLoading(true);
     (async () => {
-      const { data, error } = await supabase.from("subjects").select("grade_data").eq("name", active).eq("semester", activeSemester).eq("user_id", WORKSPACE_OWNER_ID).maybeSingle();
+      const { data, error } = await supabase.from("subjects").select("grade_data,attendance_data").eq("name", active).eq("semester", activeSemester).eq("user_id", WORKSPACE_OWNER_ID).maybeSingle();
       if (cancelled) return;
       if (error) setError("Não consegui carregar as notas: " + error.message);
       setGradeData(data?.grade_data && Array.isArray(data.grade_data.columns) ? data.grade_data : emptyGradeData);
+      setAttendanceData(data?.attendance_data && Array.isArray(data.attendance_data.records) ? data.attendance_data : {records:[]});
       setGradeLoading(false);
     })();
     return () => { cancelled = true; };
