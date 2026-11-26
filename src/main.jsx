@@ -66,7 +66,9 @@ function App() {
   const [plannerDescription,setPlannerDescription]=useState("");
   const [plannerLoading,setPlannerLoading]=useState(false);
   const [plannerMonth,setPlannerMonth]=useState(()=>new Date(new Date().getFullYear(),new Date().getMonth(),1));
-  const [plannerSelectedDay,setPlannerSelectedDay]=useState(()=>new Date().toISOString().slice(0,10));
+  const [plannerSelectedDay,setPlannerSelectedDay]=useState(()=>{try{return localStorage.getItem("luispp-planner-day")||localDateKey();}catch{return localDateKey();}});
+  const [plannerDayWasSaved]=useState(()=>{try{return Boolean(localStorage.getItem("luispp-planner-day"));}catch{return false;}});
+  const [selectedPlannerItem,setSelectedPlannerItem]=useState(null);
 
   // Mantém a página, o semestre e a busca na URL para continuar de onde parou após atualizar.
   useEffect(() => {
@@ -181,6 +183,8 @@ function App() {
   }, [session?.user?.id, workspaceReady, activeSemester]);
 
 
+  useEffect(()=>{try{localStorage.setItem("luispp-planner-day",plannerSelectedDay||"");}catch{}},[plannerSelectedDay]);
+
   // Planejamento geral: os dados ficam no Supabase e aparecem em qualquer dispositivo.
   useEffect(() => {
     if (!workspaceReady || !supabase) { setPlannerItems([]); return; }
@@ -195,7 +199,7 @@ function App() {
         .order("due_time", { ascending: true });
       if (cancelled) return;
       if (error) setError("Não foi possível carregar o planejamento: " + error.message);
-      else setPlannerItems(data || []);
+      else { const rows=data||[]; setPlannerItems(rows); if(!plannerDayWasSaved && rows.length){ const today=localDateKey(); const nearest=rows.find(item=>item.due_date>=today)||rows[rows.length-1]; if(nearest){setPlannerSelectedDay(nearest.due_date);const d=new Date(nearest.due_date+"T12:00:00");setPlannerMonth(new Date(d.getFullYear(),d.getMonth(),1));} } }
       setPlannerLoading(false);
     };
     loadPlanner();
