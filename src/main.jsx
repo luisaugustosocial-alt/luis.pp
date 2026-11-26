@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { createClient } from "@supabase/supabase-js";
-import { BookOpen, Search, Plus, Upload, FileText, Presentation, Image as ImageIcon, Download, Trash2, LogOut, LockKeyhole, FolderOpen, Clock3, X, ExternalLink, Layers3, CalendarDays, Check, Pencil, GraduationCap, ChevronRight } from "lucide-react";
+import { BookOpen, Search, Plus, Upload, FileText, Presentation, Image as ImageIcon, Download, Trash2, LogOut, LockKeyhole, FolderOpen, Clock3, X, ExternalLink, Layers3, CalendarDays, Check, Pencil, GraduationCap, ChevronRight, CalendarCheck, ListTodo, Circle, CheckCircle2 } from "lucide-react";
 import "./styles.css";
 
 const url = import.meta.env.VITE_SUPABASE_URL;
