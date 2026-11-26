@@ -9,7 +9,7 @@
   "display": "standalone",
   "orientation": "any",
   "background_color": "#140B45",
-  "theme_color": "#5B2BFF",
+  "theme_color": "#1746B8",
   "icons": [
     {
       "src": "/icons/luispp-icon.svg",
