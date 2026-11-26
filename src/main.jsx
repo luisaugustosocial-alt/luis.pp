@@ -11,19 +11,28 @@ const ACCESS_PIN = "1029";
 const WORKSPACE_OWNER_ID = "ead61e7c-19bc-462d-8055-90fd9768de26";
 const starter = ["Fundamentos da Publicidade e Propaganda", "História Social dos Meios", "Filosofia e História das Ciências", "Oficina de Leitura e Produção Textual", "Informática Aplicada", "Ação Artística e Apreciação Estética"];
 
+function readPageState() {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    active: params.get("pagina") || "Todas",
+    semester: params.get("semestre") || "2026.1",
+    query: params.get("busca") || ""
+  };
+}
+
 function App() {
   const [session, setSession] = useState(null);
   const [authReady, setAuthReady] = useState(false);
   const [workspaceReady, setWorkspaceReady] = useState(false);
   const [password, setPassword] = useState("");
   const [semesters, setSemesters] = useState(["2026.1"]);
-  const [activeSemester, setActiveSemester] = useState("2026.1");
+  const [activeSemester, setActiveSemester] = useState(() => readPageState().semester);
   const [addingSemester, setAddingSemester] = useState(false);
   const [newSemester, setNewSemester] = useState("");
   const [subjects, setSubjects] = useState(starter);
   const [docs, setDocs] = useState([]);
-  const [active, setActive] = useState("Todas");
-  const [query, setQuery] = useState("");
+  const [active, setActive] = useState(() => readPageState().active);
+  const [query, setQuery] = useState(() => readPageState().query);
   const [adding, setAdding] = useState(false);
   const [newSubject, setNewSubject] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -34,6 +43,33 @@ function App() {
   const [gradeLoading, setGradeLoading] = useState(false);
   const [activityName, setActivityName] = useState("");
   const [activityType, setActivityType] = useState("Prova");
+
+  // Mantém a página, o semestre e a busca na URL para continuar de onde parou após atualizar.
+  useEffect(() => {
+    const syncUrl = () => {
+      const params = new URLSearchParams(window.location.search);
+      if (active === "Todas") params.delete("pagina");
+      else params.set("pagina", active);
+      if (activeSemester === "2026.1") params.delete("semestre");
+      else params.set("semestre", activeSemester);
+      if (query) params.set("busca", query);
+      else params.delete("busca");
+      const next = window.location.pathname + (params.toString() ? "?" + params.toString() : "") + window.location.hash;
+      window.history.replaceState({ ...window.history.state, luispp: true }, "", next);
+    };
+    syncUrl();
+  }, [active, activeSemester, query]);
+
+  useEffect(() => {
+    const restoreFromUrl = () => {
+      const page = readPageState();
+      setActive(page.active);
+      setActiveSemester(page.semester);
+      setQuery(page.query);
+    };
+    window.addEventListener("popstate", restoreFromUrl);
+    return () => window.removeEventListener("popstate", restoreFromUrl);
+  }, []);
 
   useEffect(() => {
     if (!supabase) { setAuthReady(true); return; }
