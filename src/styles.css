@@ -449,3 +449,34 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   .notes-intro{align-items:center}
 }
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+
+/* Corrige o acesso ao cadastro de matérias no mobile. */
+@media(max-width:700px){
+  .sidebar .side-heading{
+    display:flex!important;position:fixed!important;left:12px!important;
+    bottom:calc(88px + env(safe-area-inset-bottom))!important;
+    z-index:35!important;margin:0!important;padding:7px 10px!important;
+    border:1px solid #B9CBEF!important;border-radius:999px!important;
+    background:#fff!important;color:#1746B8!important;
+    box-shadow:0 4px 12px rgba(16,43,99,.14)!important;
+    font-size:9px!important;letter-spacing:1px!important
+  }
+  .sidebar .side-heading button{
+    display:grid!important;visibility:visible!important;opacity:1!important;
+    width:36px!important;height:36px!important;min-width:36px!important;
+    margin-left:8px!important;background:#1746B8!important;color:#fff!important;
+    border:0!important;border-radius:50%!important;box-shadow:0 3px 0 #0D2F83!important
+  }
+  .sidebar .subject-form{
+    display:flex!important;position:fixed!important;left:12px!important;
+    bottom:calc(142px + env(safe-area-inset-bottom))!important;
+    z-index:36!important;width:min(320px,calc(100vw - 24px))!important;
+    padding:9px!important;border:1px solid #B9CBEF!important;
+    border-radius:18px!important;background:#fff!important;
+    box-shadow:0 8px 24px rgba(16,43,99,.18)!important
+  }
+  .sidebar .subject-form input{min-width:0!important;flex:1!important;height:42px!important}
+  .sidebar .subject-form button{display:grid!important;visibility:visible!important;opacity:1!important;
+    flex:none!important;width:40px!important;height:40px!important;
+    background:#1746B8!important;color:#fff!important;border-radius:50%!important}
+}
