@@ -95,7 +95,9 @@ function App() {
       if (permission !== "granted") throw new Error("Permissão de notificações não concedida.");
       const registration = await navigator.serviceWorker.register("/sw.js");
       const existing = await registration.pushManager.getSubscription();
-      const subscription = existing || await registration.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey:Uint8Array.from(atob("BNJcwfZT/IQsOq8YeVaXidfaYXAAeTjZjE3IDWC5fuAkm/Smmu++bncVV8kfKvzgq2CAlXqpP8qQaWVhMnj9Bzg"), ch => ch.charCodeAt(0)) });
+      const vapidPublicKey = "BPpVsfvvXpE8a5Q9Xgy5BqRSVD6Q-QtWj0X7W-ZSFMKO4m3Q8l2ztDFcPtkzjKPw3dFUgxeamgzk7W5uEwGneSE";
+      const applicationServerKey = Uint8Array.from(atob(vapidPublicKey.replace(/-/g,"+").replace(/_/g,"/") + "=".repeat((4-vapidPublicKey.length%4)%4)), ch => ch.charCodeAt(0));
+      const subscription = existing || await registration.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey });
       const json = subscription.toJSON();
       const { error } = await supabase.from("push_subscriptions").upsert({ user_id:session.user.id, endpoint:json.endpoint, p256dh:json.keys.p256dh, auth:json.keys.auth, expiration_time:json.expirationTime }, { onConflict:"endpoint" });
       if (error) throw error;
