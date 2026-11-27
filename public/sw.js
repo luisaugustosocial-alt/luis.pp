@@ -1,4 +1,4 @@
-const CACHE_NAME = "luispp-pwa-v3";
+const CACHE_NAME = "luispp-pwa-v4";
 const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/icons/luispp-icon.svg"];
 
 self.addEventListener("install", (event) => {
