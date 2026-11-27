@@ -105,11 +105,11 @@ footer{text-align:center;font-size:10px;font-weight:400;color:var(--muted);paddi
 .notes-intro{display:flex;align-items:center;gap:16px;padding:20px 22px;margin-bottom:20px;border:0;border-radius:20px;background:var(--night);box-shadow:0 8px 0 #080322;color:#fff}
 .notes-intro-icon,.notes-card-icon{width:47px;height:47px;display:grid;place-items:center;flex:none;border-radius:15px;background:var(--yellow);color:var(--night);box-shadow:0 4px 0 var(--yellow-shadow)}
 .notes-intro b{display:block;font:800 14px var(--font);color:#fff;margin-bottom:5px}.notes-intro span{font-size:11px;font-weight:300;color:#E5DFFF;line-height:1.5}
-.notes-subject-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.notes-subject-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}.notes-subject-manage{display:flex;align-items:stretch;gap:7px;min-width:0}.notes-subject-manage .notes-subject-card{flex:1;min-width:0}
 .notes-subject-card{display:flex;align-items:center;gap:13px;text-align:left;padding:19px;border:0;border-radius:20px;background:var(--violet);box-shadow:0 7px 0 var(--violet-shadow);color:#fff;transition:transform .16s,box-shadow .16s;min-width:0;min-height:94px}
-.notes-subject-card:nth-child(4n+2){background:var(--pink);box-shadow:0 7px 0 var(--pink-shadow)}
-.notes-subject-card:nth-child(4n+3){background:var(--yellow);box-shadow:0 7px 0 var(--yellow-shadow);color:var(--night)}
-.notes-subject-card:nth-child(4n){background:var(--cyan);box-shadow:0 7px 0 var(--cyan-shadow);color:var(--night)}
+.notes-subject-manage:nth-child(4n+2) .notes-subject-card{background:var(--pink);box-shadow:0 7px 0 var(--pink-shadow)}
+.notes-subject-manage:nth-child(4n+3) .notes-subject-card{background:var(--yellow);box-shadow:0 7px 0 var(--yellow-shadow);color:var(--night)}
+.notes-subject-manage:nth-child(4n) .notes-subject-card{background:var(--cyan);box-shadow:0 7px 0 var(--cyan-shadow);color:var(--night)}
 .notes-subject-card:hover{transform:translateY(-2px)}.notes-subject-card:active{transform:translateY(4px);box-shadow:0 2px 0 var(--violet-shadow)}
 .notes-card-icon{width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,.2);color:inherit;box-shadow:none}
 .notes-card-copy{display:flex;flex-direction:column;gap:5px;min-width:0;flex:1}.notes-card-copy small{font-size:9px;color:inherit;letter-spacing:2px;font-weight:800}.notes-card-copy b{font:800 13px/1.35 var(--font);color:inherit}.notes-card-copy em{font-style:normal;font-size:10px;font-weight:300;color:inherit}.notes-card-arrow{color:inherit}
@@ -826,3 +826,5 @@ body,.app,.content{overscroll-behavior-y:contain}
 
 /* Ações de gerenciamento das matérias */
 .subject-list-item{display:flex;align-items:center;gap:4px;min-width:0}.subject-list-item>.nav{flex:1;min-width:0}.subject-delete-button{width:34px;height:36px;flex:0 0 34px;display:grid;place-items:center;border:1px solid var(--line);border-radius:11px;background:var(--white);color:var(--muted);cursor:pointer;transition:background .18s ease,color .18s ease,border-color .18s ease,transform .18s ease}.subject-delete-button:hover{background:#fff0f0;color:#c03945;border-color:#e7a8ad;transform:translateY(-1px)}.subject-delete-button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.notes-subject-remove{width:42px;min-width:42px;align-self:center;height:42px;display:grid;place-items:center;border:1px solid var(--line);border-radius:14px;background:var(--white);color:var(--muted);cursor:pointer;transition:all .18s ease}.notes-subject-remove:hover{background:#fff0f0;color:#c03945;border-color:#e7a8ad}
