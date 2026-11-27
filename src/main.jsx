@@ -95,6 +95,7 @@ function App() {
       if (permission !== "granted") throw new Error("Permissão de notificações não concedida.");
       const registration = await navigator.serviceWorker.register("/sw.js");
       const existing = await registration.pushManager.getSubscription();
+      if (existing) await existing.unsubscribe();
       const vapidPublicKey = "BPpVsfvvXpE8a5Q9Xgy5BqRSVD6Q-QtWj0X7W-ZSFMKO4m3Q8l2ztDFcPtkzjKPw3dFUgxeamgzk7W5uEwGneSE";
       const applicationServerKey = Uint8Array.from(atob(vapidPublicKey.replace(/-/g,"+").replace(/_/g,"/") + "=".repeat((4-vapidPublicKey.length%4)%4)), ch => ch.charCodeAt(0));
       const subscription = existing || await registration.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey });
